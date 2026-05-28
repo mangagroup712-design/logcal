@@ -1,6 +1,6 @@
 const PLANLY_FIREBASE_CONFIG = {
     apiKey: 'AIzaSyAmGyOqGPZOBGMQE739HKGnyda3-udubrc',
-    authDomain: 'logcal-60333.firebaseapp.com',
+    authDomain: 'logcal.f5.si',
     projectId: 'logcal-60333',
     storageBucket: 'logcal-60333.firebasestorage.app',
     messagingSenderId: '747132286989',

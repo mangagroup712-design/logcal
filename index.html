@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planly - ホーム</title>
+    <title>Logcal - ホーム</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 <div id="app">
     <header id="topbar">
         <div id="topbar-inner">
-            <div id="app-brand"><span class="brand-dot"></span><span class="brand-name">Planly</span></div>
+            <div id="app-brand"><span class="brand-dot"></span><span class="brand-name">Logcal</span></div>
             <div class="topbar-actions">
                 <button id="notif-btn" type="button" aria-label="通知">
                     <span class="notif-icon">
@@ -40,7 +40,7 @@
             <div class="summary-card card-events"><span class="card-label">予定</span><span class="card-number" id="event-count">0</span><span class="card-sub">今日</span></div>
         </section>
 
-        <section class="section-block"><h2 class="section-title">直近の予定</h2><ul class="event-list" id="event-list"></ul></section>
+        <section class="section-block"><div class="section-header-row"><h2 class="section-title">直近の予定</h2><button class="add-btn" id="open-event-page" type="button">予定を追加</button></div><ul class="event-list" id="event-list"></ul></section>
         <section class="section-block"><div class="section-header-row"><h2 class="section-title">タスク</h2><button class="add-btn" id="open-category-modal" type="button">カテゴリー管理</button></div><div id="tasks-container"></div></section>
     </main>
 
@@ -49,9 +49,9 @@
     </button>
 
     <nav id="tabs" role="navigation" aria-label="メインナビゲーション">
-        <button id="home-tab" class="tab-btn active" type="button"><span class="tab-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="tab-label">ホーム</span></button>
-        <button id="calender-tab" class="tab-btn" type="button"><span class="tab-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="tab-label">カレンダー</span></button>
-        <button id="settings-tab" class="tab-btn" type="button"><span class="tab-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="tab-label">設定</span></button>
+        <button id="home-tab" class="tab-btn active" type="button"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="tab-label">ホーム</span></button>
+        <button id="calender-tab" class="tab-btn" type="button"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="tab-label">カレンダー</span></button>
+        <button id="settings-tab" class="tab-btn" type="button"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="tab-label">設定</span></button>
     </nav>
 </div>
 
@@ -61,7 +61,7 @@
         <div class="modal-field"><label class="modal-label" for="task-input-text">タスク名</label><input class="modal-input" id="task-input-text" type="text" placeholder="例: 企画書の修正"></div>
         <div class="modal-field"><label class="modal-label" for="task-input-category">カテゴリー</label><div style="display:flex; gap:8px;"><select class="modal-input" id="task-input-category" style="flex:1;"></select><button class="btn-cancel" id="add-category-btn" type="button" style="flex:0 0 auto; padding:0 16px;">追加</button></div></div>
         <div class="modal-row"><div class="modal-field"><label class="modal-label" for="task-input-due">期限</label><input class="modal-input" id="task-input-due" type="date"></div><div class="modal-field"><label class="modal-label" for="task-input-time">時刻</label><input class="modal-input" id="task-input-time" type="time"></div></div>
-        <div class="modal-field attachment-file"><label class="modal-label" for="task-input-files">添付ファイル</label><input class="modal-input" id="task-input-files" type="file" accept="image/*" multiple><div class="attachment-preview" id="task-attachment-preview"></div></div>
+        <div class="modal-field attachment-file"><label class="modal-label" for="task-input-files">添付ファイル</label><input class="modal-input" id="task-input-files" type="file" accept="image/*" multiple style="display:none;"><button class="file-upload-btn" id="file-upload-btn" type="button">ファイルを選択</button><div class="attachment-preview" id="task-attachment-preview"></div></div>
         <div class="modal-field"><label class="modal-label">緊急</label><label class="toggle-label"><input type="checkbox" id="task-input-urgent"><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-text">急ぎ</span></label></div>
         <div class="modal-actions"><button class="btn-cancel" id="task-modal-cancel" type="button">キャンセル</button><button class="btn-save" id="task-modal-save" type="button">保存する</button></div>
     </div>
@@ -80,10 +80,9 @@
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-<script src="Planly.js"></script>
+    <script src="Logcal.js"></script>
 <script src="home.js"></script>
 <script src="firebasemsg.js"></script>
-<script src="firebase-sync.js"></script>
 <script src="firebase-sync.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -131,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderTasks() {
         const container = document.getElementById('tasks-container');
         const tasks = getTasks();
+        const colors = getCategoryColors();
         const grouped = new Map(getCategories().map(category => [category, []]));
         tasks.forEach(function(task) {
             const category = task.category || 'その他';
@@ -140,15 +140,23 @@ document.addEventListener('DOMContentLoaded', function() {
         container.innerHTML = '';
         grouped.forEach(function(catTasks, category) {
             if (catTasks.length === 0) return;
+            const color = colors[category] || '#A0A0B8';
+            const textColor = getContrastTextColor(color);
             const details = document.createElement('details');
             details.className = 'category-block';
             details.open = true;
-            details.innerHTML = '<summary class="category-header"><span>' + escHtml(category) + '</span> <span style="color:var(--text-muted); font-size:14px; font-weight:normal;">' + catTasks.filter(task => !task.done).length + '件</span></summary>';
+            const summary = document.createElement('summary');
+            summary.className = 'category-header';
+            summary.style.background = color;
+            summary.style.color = textColor;
+            summary.innerHTML = '<span>' + escHtml(category) + '</span> <span style="opacity:0.72; font-size:14px; font-weight:normal;">' + catTasks.filter(task => !task.done).length + '件</span>';
+            details.appendChild(summary);
             const list = document.createElement('ul');
             list.className = 'task-list';
             catTasks.forEach(function(task) {
                 const li = document.createElement('li');
-                li.className = 'task-item';
+                li.className = 'task-item' + (task.urgent ? ' urgent' : '');
+                li.style.setProperty('--category-color', color);
                 const dueText = task.done ? '完了' : escHtml(formatDue(task.due) + (task.time ? ' ' + task.time : ''));
                 li.innerHTML = '<button class="task-check' + (task.done ? ' checked' : '') + '" data-id="' + task.id + '" type="button" aria-label="完了を切り替え"></button><span class="task-text' + (task.done ? ' done' : '') + '">' + escHtml(task.text) + '</span><span class="task-due' + (task.done ? ' done' : task.urgent ? ' urgent' : '') + '">' + dueText + '</span><button class="task-delete" data-id="' + task.id + '" type="button" aria-label="削除">×</button>';
                 if (task.attachments.length) {
@@ -208,11 +216,26 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderCategoryManager() {
         const list = document.getElementById('category-list');
         list.innerHTML = '';
+        const colors = getCategoryColors();
         getCategories().forEach(function(category) {
+            const color = colors[category] || '#A0A0B8';
+            const textColor = getContrastTextColor(color);
             const row = document.createElement('div');
             row.className = 'category-manager-item';
-            row.innerHTML = '<span>' + escHtml(category) + '</span><button class="category-delete" type="button" data-category="' + escHtml(category) + '" aria-label="削除">×</button>';
+            row.style.background = color;
+            row.style.color = textColor;
+            row.innerHTML = '<span>' + escHtml(category) + '</span><input type="color" class="category-color-picker" value="' + escHtml(color) + '" data-category="' + escHtml(category) + '" aria-label="色を変更"><button class="category-delete" type="button" data-category="' + escHtml(category) + '" aria-label="削除">×</button>';
             list.appendChild(row);
+        });
+        list.querySelectorAll('.category-color-picker').forEach(function(picker) {
+            picker.addEventListener('input', function() {
+                const category = picker.dataset.category;
+                const newColors = getCategoryColors();
+                newColors[category] = picker.value;
+                saveCategoryColors(newColors);
+                renderCategoryManager();
+                renderAll();
+            });
         });
         list.querySelectorAll('.category-delete').forEach(function(button) {
             button.addEventListener('click', function() {
@@ -249,15 +272,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderCategorySelect() {
         inputCat.innerHTML = '';
+        const colors = getCategoryColors();
         getCategories().forEach(function(category) {
             const option = document.createElement('option');
             option.value = category;
             option.textContent = category;
+            const color = colors[category] || '#A0A0B8';
+            option.style.backgroundColor = color;
+            option.style.color = getContrastTextColor(color);
             inputCat.appendChild(option);
         });
     }
 
     document.getElementById('open-task-modal').addEventListener('click', openModal);
+    document.getElementById('file-upload-btn').addEventListener('click', function() { inputFiles.click(); });
+    document.getElementById('open-event-page').addEventListener('click', function() { navigateWithPageBlur('calender.html'); });
     document.getElementById('task-modal-cancel').addEventListener('click', closeModal);
     modal.addEventListener('click', function(event) { if (event.target === modal) closeModal(); });
     document.getElementById('task-modal-save').addEventListener('click', function() {
@@ -292,6 +321,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window._planlyPageRefresh = renderAll;
     renderAll();
+    if (window.location.hash === '#open-task') {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        openModal();
+    }
 });
 </script>
 </body>

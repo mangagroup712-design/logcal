@@ -13,14 +13,14 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-    const title = payload.notification?.title || 'Planly';
+    const title = payload.notification?.title || 'Logcal';
     const body = payload.notification?.body || 'You have a new notification.';
 
     self.registration.showNotification(title, {
         body: body,
         icon: 'icon.png',
         badge: 'icon.png',
-        tag: payload.data?.tag || 'planly-fcm',
+        tag: payload.data?.tag || 'logcal-fcm',
         renotify: true,
         data: payload.data || {}
     });

@@ -2,6 +2,8 @@
     document.body.classList.add('page-ready');
     setupTabs();
     setupNotifications();
+    setupScrollShadows();
+    setupGlobalFab();
 });
 
 function setupTabs() {
@@ -41,6 +43,8 @@ function setupNotifications() {
 
     button.addEventListener('click', function(event) {
         event.stopPropagation();
+        const accountPanel = document.getElementById('account-panel');
+        if (accountPanel) accountPanel.classList.remove('open');
         panel.classList.toggle('open');
         if (panel.classList.contains('open')) {
             markAllRead();
@@ -75,4 +79,29 @@ function setupNotifications() {
             list.appendChild(li);
         });
     }
+}
+
+function setupScrollShadows() {
+    function updateScrollShadows() {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        const viewportBottom = scrollTop + window.innerHeight;
+        const pageHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+
+        document.body.classList.toggle('has-content-above', scrollTop > 1);
+        document.body.classList.toggle('has-content-below', viewportBottom < pageHeight - 1);
+    }
+
+    updateScrollShadows();
+    window.addEventListener('scroll', updateScrollShadows, { passive: true });
+    window.addEventListener('resize', updateScrollShadows);
+    window.addEventListener('load', updateScrollShadows);
+}
+
+function setupGlobalFab() {
+    const fab = document.getElementById('open-task-page');
+    if (!fab) return;
+    fab.addEventListener('click', function() {
+        if (document.body.classList.contains('page-leaving')) return;
+        window.location.href = 'index.html#open-task';
+    });
 }

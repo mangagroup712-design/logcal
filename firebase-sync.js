@@ -9,7 +9,7 @@
  *   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js"></script>
  *   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
  *   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
- *   <script src="Planly.js"></script>
+ *   <script src="Logcal.js"></script>
  *   <script src="home.js"></script>
  *   <script src="firebasemsg.js"></script>
  *   <script src="firebase-sync.js"></script>
@@ -63,7 +63,7 @@
         }
     }
 
-    /* ── Planly.js の writeJson をフック ───────────────── */
+    /* ── Logcal.js の writeJson をフック ───────────────── */
     var _origWriteJson = window.writeJson;
     window.writeJson = function (key, value) {
         _origWriteJson(key, value);
@@ -174,6 +174,8 @@
 
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
+            const notifPanel = document.getElementById('notif-panel');
+            if (notifPanel) notifPanel.classList.remove('open');
             const panel = document.getElementById('account-panel');
             if (panel) panel.classList.toggle('open');
         });

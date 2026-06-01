@@ -1,4 +1,4 @@
-const PLANLY_FIREBASE_CONFIG = {
+const LOGCAL_FIREBASE_CONFIG = {
     apiKey: 'AIzaSyAmGyOqGPZOBGMQE739HKGnyda3-udubrc',
     authDomain: 'logcal-60333.firebaseapp.com',
     projectId: 'logcal-60333',
@@ -8,11 +8,11 @@ const PLANLY_FIREBASE_CONFIG = {
 };
 
 // Replace this with the public key from Firebase Console > Cloud Messaging > Web Push certificates.
-const PLANLY_FIREBASE_VAPID_KEY = 'BHcRnKHYe-u90lAtxsoojQibRgPQtVm8Fg8dubd0Df2Z7yeL2JYYiQX4NO2KnxyXNdDt93EtaEcKjlSBeiyqDrM';
+const LOGCAL_FIREBASE_VAPID_KEY = 'BHcRnKHYe-u90lAtxsoojQibRgPQtVm8Fg8dubd0Df2Z7yeL2JYYiQX4NO2KnxyXNdDt93EtaEcKjlSBeiyqDrM';
 
-let planlyMessaging = null;
+let logcalMessaging = null;
 
-async function initPlanlyFirebaseMessaging() {
+async function initLogcalFirebaseMessaging() {
     if (!('serviceWorker' in navigator) || !('Notification' in window)) {
         return { ok: false, reason: 'This browser does not support notifications.' };
     }
@@ -26,22 +26,22 @@ async function initPlanlyFirebaseMessaging() {
     }
 
     try {
-        if (!firebase.apps.length) firebase.initializeApp(PLANLY_FIREBASE_CONFIG);
-        planlyMessaging = firebase.messaging();
+        if (!firebase.apps.length) firebase.initializeApp(LOGCAL_FIREBASE_CONFIG);
+        logcalMessaging = firebase.messaging();
 
         const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
         await navigator.serviceWorker.ready;
 
-        planlyMessaging.onMessage(function(payload) {
-            const title = payload.notification?.title || 'Planly';
+        logcalMessaging.onMessage(function(payload) {
+            const title = payload.notification?.title || 'Logcal';
             const body = payload.notification?.body || 'You have a new notification.';
-            showPlanlyNotification(title, body, payload.data || {});
+            showLogcalNotification(title, body, payload.data || {});
         });
 
-        const hasVapidKey = PLANLY_FIREBASE_VAPID_KEY && !PLANLY_FIREBASE_VAPID_KEY.startsWith('TODO_');
+        const hasVapidKey = LOGCAL_FIREBASE_VAPID_KEY && !LOGCAL_FIREBASE_VAPID_KEY.startsWith('TODO_');
         if (Notification.permission === 'granted' && hasVapidKey) {
-            const token = await planlyMessaging.getToken({
-                vapidKey: PLANLY_FIREBASE_VAPID_KEY,
+            const token = await logcalMessaging.getToken({
+                vapidKey: LOGCAL_FIREBASE_VAPID_KEY,
                 serviceWorkerRegistration: registration
             });
             if (token) localStorage.setItem(PLANLY_KEYS.fcmToken, token);
@@ -58,7 +58,7 @@ async function initPlanlyFirebaseMessaging() {
     }
 }
 
-async function requestPlanlyNotificationPermission() {
+async function requestLogcalNotificationPermission() {
     if (!('Notification' in window)) {
         return { ok: false, reason: 'This browser does not support notifications.' };
     }
@@ -71,13 +71,13 @@ async function requestPlanlyNotificationPermission() {
         return { ok: false, permission: permission, reason: 'Notification permission is not granted.' };
     }
 
-    const result = await initPlanlyFirebaseMessaging();
+    const result = await initLogcalFirebaseMessaging();
     startTaskReminderScheduler();
     return { ...result, permission: permission };
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    initPlanlyFirebaseMessaging().finally(function() {
+    initLogcalFirebaseMessaging().finally(function() {
         startTaskReminderScheduler();
     });
 });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planly - カレンダー</title>
+    <title>Logcal - calender</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,7 +294,7 @@
 <body>
 <header id="topbar">
     <div id="topbar-inner">
-        <div id="app-brand"><span class="brand-dot"></span><span class="brand-name">Planly</span></div>
+        <div id="app-brand"><span class="brand-dot"></span><span class="brand-name">Logcal</span></div>
         <div class="topbar-actions">
             <button id="notif-btn" type="button" aria-label="通知">
                 <span class="notif-icon">
@@ -391,14 +391,17 @@
     </button>
 </nav>
 
+<button class="fab-add-btn" id="open-task-page" type="button" aria-label="タスクを追加">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-<script src="Planly.js"></script>
+    <script src="Logcal.js"></script>
 <script src="home.js"></script>
 <script src="firebasemsg.js"></script>
-<script src="firebase-sync.js"></script>
 <script src="firebase-sync.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

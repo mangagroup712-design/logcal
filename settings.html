@@ -3,11 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logcal - settings</title>
+    <meta name="theme-color" content="#a25bf4">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" id="favicon" href="">
+    <title>Logcal - 設定</title>
+    <script>
+    (function() {
+        var saved = localStorage.getItem('planly_theme');
+        if (saved === 'dark' || saved === 'warm' || saved === 'olive' || saved === 'moon' || saved === 'neon' || saved === 'sakura' || saved === 'nightsky') {
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        var darkThemes = { dark: 1, moon: 1, neon: 1, nightsky: 1 };
+        document.getElementById('favicon').href = darkThemes[saved] ? 'logcal-logo-dark.ico' : 'logcal-logo-white.ico';
+    })();
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru&family=Varela+Round&display=swap" rel="stylesheet">
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+            appId: "f1fddbbe-ea99-48be-989c-effed57c9f03",
+            allowLocalhostAsSecureOrigin: true,
+            notifyButton: { enable: false },
+            serviceWorkerParam: { scope: "/" },
+            serviceWorkerPath: "OneSignalSDKWorker.js"
+        });
+    });
+    </script>
 </head>
 <body>
 <div id="app">
@@ -46,7 +73,29 @@
         <section class="settings-card">
             <div class="settings-row"><div class="settings-info"><span class="settings-label">通知</span><span class="settings-desc">未読通知をすべて既読にします</span></div><button class="settings-btn" id="read-all-btn" type="button">既読にする</button></div>
             <div class="settings-divider"></div>
-            <div class="settings-row"><div class="settings-info"><span class="settings-label">保存データ</span><span class="settings-desc">このブラウザ内のLogcalデータを削除します</span></div><button class="settings-btn btn-danger" id="clear-data-btn" type="button">リセット</button></div>
+            <div class="settings-row"><div class="settings-info"><span class="settings-label">保存データ</span><span class="settings-desc">このブラウザ内のローカルデータを削除します</span></div><button class="settings-btn btn-danger" id="clear-data-btn" type="button">リセット</button></div>
+        </section>
+
+        <section class="settings-card">
+            <div class="settings-row">
+                <div class="settings-info"><span class="settings-label">データのエクスポート</span><span class="settings-desc">すべてのデータをJSONファイルとして保存します</span></div>
+                <button class="settings-btn" id="export-btn" type="button">エクスポート</button>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+                <div class="settings-info"><span class="settings-label">データのインポート</span><span class="settings-desc">JSONファイルからデータを復元します</span></div>
+                <div class="export-row">
+                    <input type="file" class="import-file-input" id="import-file" accept="application/json">
+                    <button class="settings-btn" id="import-btn" type="button">ファイルを選択</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="settings-card">
+            <div class="settings-row">
+                <div class="settings-info"><span class="settings-label">テーマ</span><span class="settings-desc">アプリの配色テーマを変更します</span></div>
+                <button class="settings-btn" id="open-theme-modal" type="button">テーマを選択</button>
+            </div>
         </section>
 
         <section class="settings-card">
@@ -71,6 +120,15 @@
             <div class="settings-divider"></div>
             <div class="settings-row"><div class="settings-info"><span class="settings-label">FCM Token</span><span class="settings-desc">サーバー配信に使う端末識別トークン</span></div><span class="settings-value" id="fcm-token-status">未取得</span></div>
         </section>
+
+        <section class="settings-card app-overview">
+            <div class="app-logo-wrap">
+                <img class="app-logo" src="/logcal-logo-white.ico" alt="Logcalのロゴ">
+            </div>
+            <h3 class="app-name">Logcal</h3>
+            <p class="app-version">v0.3</p>
+            <p class="app-desc">app description</p>
+        </section>
     </main>
 
     <nav id="tabs" role="navigation" aria-label="メインナビゲーション">
@@ -79,9 +137,72 @@
         <button id="settings-tab" class="tab-btn active" type="button"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="tab-label">設定</span></button>
     </nav>
 
-    <button class="fab-add-btn" id="open-task-page" type="button" aria-label="タスクを追加">
+    <button class="fab-add-btn" id="open-task-modal" type="button" aria-label="タスクを追加">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+</div>
+
+<div class="modal-overlay" id="task-modal" aria-hidden="true">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+        <p class="modal-title" id="task-modal-title">タスクを追加</p>
+        <div class="modal-body">
+            <div class="modal-field"><label class="modal-label" for="task-input-text">タスク名</label><input class="modal-input" id="task-input-text" type="text" placeholder="例: 企画書の修正"></div>
+            <div class="modal-field"><label class="modal-label" for="task-input-category">カテゴリー</label><div style="display:flex; gap:8px;"><select class="modal-input" id="task-input-category" style="flex:1;"></select><button class="btn-cancel" id="add-category-btn" type="button" style="flex:0 0 auto; padding:0 16px;">追加</button></div></div>
+            <div class="modal-row"><div class="modal-field"><label class="modal-label" for="task-input-due">期限</label><input class="modal-input" id="task-input-due" type="date"></div><div class="modal-field"><label class="modal-label" for="task-input-time">時刻</label><input class="modal-input" id="task-input-time" type="time"></div></div>
+            <div class="modal-field"><label class="modal-label" for="task-input-recurring">繰り返し</label><select class="modal-input" id="task-input-recurring"><option value="">なし</option><option value="daily">毎日</option><option value="weekly">毎週</option><option value="monthly">毎月</option></select></div>
+            <div class="modal-field attachment-file"><label class="modal-label" for="task-input-files">添付ファイル</label><input class="modal-input" id="task-input-files" type="file" multiple style="display:none;"><button class="file-upload-btn" id="file-upload-btn" type="button">ファイルを選択</button><div class="attachment-preview" id="task-attachment-preview"></div></div>
+            <div class="modal-field"><label class="modal-label" for="task-input-memo">メモ</label><textarea class="modal-input" id="task-input-memo" rows="2" placeholder="詳細を入力..."></textarea></div>
+            <div class="modal-field"><label class="modal-label">緊急</label><label class="toggle-label"><input type="checkbox" id="task-input-urgent"><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-text">急ぎ</span></label></div>
+        </div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="task-modal-cancel" type="button">キャンセル</button><button class="btn-save" id="task-modal-save" type="button">保存する</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="theme-modal" aria-hidden="true">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title">
+        <p class="modal-title" id="theme-modal-title">テーマを選択</p>
+        <div class="modal-body">
+            <p class="theme-section-label">ライトモード</p>
+            <div class="theme-grid">
+                <button class="theme-preview" data-theme="light" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #dbefff, #5B5EF4);"></span>
+                    <span class="theme-label">標準</span>
+                </button>
+                <button class="theme-preview" data-theme="warm" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #FFF8F0, #E86A33);"></span>
+                    <span class="theme-label">暖色</span>
+                </button>
+                <button class="theme-preview" data-theme="olive" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #F5F8F2, #5D8A3E);"></span>
+                    <span class="theme-label">オリーブ</span>
+                </button>
+                <button class="theme-preview" data-theme="sakura" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #FFF5F7, #FF85A2);"></span>
+                    <span class="theme-label">桜</span>
+                </button>
+            </div>
+            <p class="theme-section-label">ダークモード</p>
+            <div class="theme-grid">
+                <button class="theme-preview" data-theme="dark" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #0F1629, #5B5EF4);"></span>
+                    <span class="theme-label">標準</span>
+                </button>
+                <button class="theme-preview" data-theme="moon" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #1A1508, #FFC107);"></span>
+                    <span class="theme-label">ムーン</span>
+                </button>
+                <button class="theme-preview" data-theme="neon" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #0D0221, #B967FF);"></span>
+                    <span class="theme-label">ネオン</span>
+                </button>
+                <button class="theme-preview" data-theme="nightsky" type="button">
+                    <span class="theme-swatch" style="background: linear-gradient(135deg, #0B1220, #4DABF7);"></span>
+                    <span class="theme-label">ナイトスカイ</span>
+                </button>
+            </div>
+        </div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="theme-modal-close" type="button">閉じる</button></div>
+    </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
@@ -95,7 +216,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function renderSettings() {
-        document.getElementById('settings-task-count').textContent = getTasks().filter(task => !task.done).length + '件';
+        document.getElementById('settings-task-count').textContent = getTasks().filter(function(task) { return !task.done; }).length + '件';
         document.getElementById('settings-event-count').textContent = getEvents().length + '件';
         document.getElementById('settings-category-count').textContent = getCategories().length + '件';
         renderNotificationSettings();
@@ -103,10 +224,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderNotificationSettings() {
-        const permission = 'Notification' in window ? Notification.permission : 'unsupported';
-        const status = document.getElementById('notification-status');
-        const token = localStorage.getItem(PLANLY_KEYS.fcmToken);
-        const labels = {
+        var permission = 'Notification' in window ? Notification.permission : 'unsupported';
+        var status = document.getElementById('notification-status');
+        var token = localStorage.getItem(PLANLY_KEYS.fcmToken);
+        var labels = {
             granted: '許可済み。タスク時刻にあわせて通知します。',
             denied: 'ブラウザで通知がブロックされています。',
             default: '未許可。通知を使うには許可してください。',
@@ -117,16 +238,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('enable-notification-btn').disabled = permission === 'granted' || permission === 'unsupported';
         document.getElementById('fcm-token-status').textContent = token ? token.slice(0, 12) + '...' : '未取得';
 
-        const offsetList = document.getElementById('offset-list');
+        var offsetList = document.getElementById('offset-list');
         offsetList.innerHTML = '';
         getNotificationOffsets().forEach(function(offset) {
-            const chip = document.createElement('button');
+            var chip = document.createElement('button');
             chip.className = 'offset-chip';
             chip.type = 'button';
             chip.textContent = formatOffsetLabel(offset) + ' ×';
             chip.title = 'クリックで削除';
             chip.addEventListener('click', function() {
-                saveNotificationOffsets(getNotificationOffsets().filter(value => value !== offset));
+                saveNotificationOffsets(getNotificationOffsets().filter(function(value) { return value !== offset; }));
                 renderSettings();
             });
             offsetList.appendChild(chip);
@@ -140,25 +261,189 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('clear-data-btn').addEventListener('click', function() {
         if (!confirm('保存データをすべて削除します。よろしいですか？')) return;
-        Object.values(PLANLY_KEYS).forEach(key => localStorage.removeItem(key));
+        Object.values(PLANLY_KEYS).forEach(function(key) { localStorage.removeItem(key); });
         renderSettings();
     });
 
     document.getElementById('enable-notification-btn').addEventListener('click', async function() {
-        const result = await requestLogcalNotificationPermission();
+        var result = await requestLogcalNotificationPermission();
         if (!result.ok && result.reason) alert(result.reason);
         renderSettings();
     });
 
     document.getElementById('add-offset-btn').addEventListener('click', function() {
-        const input = document.getElementById('offset-input');
-        const value = Number(input.value);
+        var input = document.getElementById('offset-input');
+        var value = Number(input.value);
         if (!Number.isFinite(value) || value < 0 || value > 10080) {
             input.focus();
             return;
         }
         saveNotificationOffsets([...getNotificationOffsets(), Math.round(value)]);
         renderSettings();
+    });
+
+    document.getElementById('export-btn').addEventListener('click', function() {
+        var data = exportLogcalData();
+        var blob = new Blob([data], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'logcal-backup-' + todayString() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('データをエクスポートしました');
+    });
+
+    var importFile = document.getElementById('import-file');
+    document.getElementById('import-btn').addEventListener('click', function() { importFile.click(); });
+    importFile.addEventListener('change', function() {
+        if (!importFile.files || importFile.files.length === 0) return;
+        var reader = new FileReader();
+        reader.onload = function() {
+            try {
+                if (!confirm('現在のデータを上書きして復元します。よろしいですか？')) return;
+                importLogcalData(reader.result);
+                showToast('データを復元しました');
+                renderSettings();
+            } catch (e) {
+                alert('インポートに失敗しました: ' + e.message);
+            }
+        };
+        reader.readAsText(importFile.files[0]);
+    });
+
+    var themeModal = document.getElementById('theme-modal');
+
+    function openThemeModal() {
+        themeModal.classList.remove('closing');
+        themeModal.classList.add('open');
+        themeModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
+    }
+
+    function closeThemeModal() {
+        if (!themeModal.classList.contains('open')) return;
+        themeModal.classList.add('closing');
+        themeModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
+        setTimeout(function() { themeModal.classList.remove('open', 'closing'); }, 280);
+    }
+
+    document.getElementById('open-theme-modal').addEventListener('click', openThemeModal);
+    document.getElementById('theme-modal-close').addEventListener('click', closeThemeModal);
+    themeModal.addEventListener('click', function(event) { if (event.target === themeModal) closeThemeModal(); });
+    document.querySelectorAll('.theme-preview').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            setTheme(btn.dataset.theme);
+            showToast('テーマを変更しました');
+            closeThemeModal();
+        });
+    });
+
+    var taskModal = document.getElementById('task-modal');
+    var inputText = document.getElementById('task-input-text');
+    var inputDue = document.getElementById('task-input-due');
+    var inputTime = document.getElementById('task-input-time');
+    var inputCat = document.getElementById('task-input-category');
+    var inputUrgent = document.getElementById('task-input-urgent');
+    var inputMemo = document.getElementById('task-input-memo');
+    var inputRecurring = document.getElementById('task-input-recurring');
+    var inputFiles = document.getElementById('task-input-files');
+    var attachmentPreview = document.getElementById('task-attachment-preview');
+    var pendingAttachments = [];
+
+    function readFiles(files) {
+        return Promise.allSettled(Array.from(files).map(function(file) {
+            return new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function() { resolve({ name: file.name, type: file.type, dataUrl: reader.result }); };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        })).then(function(results) {
+            var loaded = results.filter(function(r) { return r.status === 'fulfilled'; }).map(function(r) { return r.value; });
+            if (loaded.length !== results.length) showToast('一部の添付ファイルを読み込めませんでした');
+            return loaded;
+        });
+    }
+
+    function renderAttachmentPreview() {
+        attachmentPreview.innerHTML = pendingAttachments.map(function(file) {
+            var thumb = file.type.indexOf('image/') === 0 ? '<img src="' + escHtml(file.dataUrl) + '" alt="">' : '';
+            return '<span class="attachment-preview-item">' + thumb + escHtml(file.name) + '</span>';
+        }).join('');
+    }
+
+    function openTaskModal() {
+        inputText.value = '';
+        inputDue.value = todayString();
+        inputTime.value = '';
+        inputMemo.value = '';
+        inputRecurring.value = '';
+        inputFiles.value = '';
+        pendingAttachments = [];
+        renderAttachmentPreview();
+        inputUrgent.checked = false;
+        renderCategorySelectSettings();
+        taskModal.classList.remove('closing');
+        taskModal.classList.add('open');
+        taskModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
+        setTimeout(function() { inputText.focus(); }, 120);
+    }
+
+    function closeTaskModal() {
+        if (!taskModal.classList.contains('open')) return;
+        taskModal.classList.add('closing');
+        taskModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
+        setTimeout(function() { taskModal.classList.remove('open', 'closing'); }, 280);
+    }
+
+    function renderCategorySelectSettings() {
+        inputCat.innerHTML = '';
+        var colors = getCategoryColors();
+        getCategories().forEach(function(category) {
+            var option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            var color = colors[category] || '#A0A0B8';
+            option.style.backgroundColor = color;
+            option.style.color = getContrastTextColor(color);
+            inputCat.appendChild(option);
+        });
+    }
+
+    document.getElementById('open-task-modal').addEventListener('click', openTaskModal);
+    document.getElementById('task-modal-cancel').addEventListener('click', closeTaskModal);
+    taskModal.addEventListener('click', function(event) { if (event.target === taskModal) closeTaskModal(); });
+    document.getElementById('file-upload-btn').addEventListener('click', function() { inputFiles.click(); });
+    inputFiles.addEventListener('change', async function() {
+        if (!inputFiles.files || inputFiles.files.length === 0) return;
+        pendingAttachments = await readFiles(inputFiles.files);
+        renderAttachmentPreview();
+    });
+    document.getElementById('task-modal-save').addEventListener('click', function() {
+        var text = inputText.value.trim();
+        if (!text) { inputText.focus(); return; }
+        addTask(text, inputDue.value, inputUrgent.checked, inputCat.value, inputTime.value, pendingAttachments, inputMemo.value.trim(), inputRecurring.value, null, '', null);
+        closeTaskModal();
+        renderSettings();
+        showToast(window._logcalLastAttachmentSaveFailed ? 'タスクを追加しました（添付は容量超過で保存されませんでした）' : 'タスクを追加しました');
+    });
+    document.getElementById('add-category-btn').addEventListener('click', function() {
+        var name = prompt('新しいカテゴリー名を入力してください');
+        if (!name) return;
+        addCategory(name.trim());
+        renderCategorySelectSettings();
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && taskModal.classList.contains('open')) {
+            closeTaskModal();
+        }
     });
 
     window._planlyPageRefresh = renderSettings;

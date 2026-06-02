@@ -29,8 +29,7 @@ async function initLogcalFirebaseMessaging() {
         if (!firebase.apps.length) firebase.initializeApp(LOGCAL_FIREBASE_CONFIG);
         logcalMessaging = firebase.messaging();
 
-        const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-        await navigator.serviceWorker.ready;
+        const registration = await navigator.serviceWorker.ready;
 
         logcalMessaging.onMessage(function(payload) {
             const title = payload.notification?.title || 'Logcal';

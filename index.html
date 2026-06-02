@@ -3,11 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#5B5EF4">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" id="favicon" href="">
     <title>Logcal - ホーム</title>
+    <script>
+    (function() {
+        var saved = localStorage.getItem('planly_theme');
+        if (saved === 'dark' || saved === 'warm' || saved === 'olive' || saved === 'moon' || saved === 'neon' || saved === 'sakura' || saved === 'nightsky') {
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        var darkThemes = { dark: 1, moon: 1, neon: 1, nightsky: 1 };
+        document.getElementById('favicon').href = darkThemes[saved] ? 'logcal-logo-dark.ico' : 'logcal-logo-white.ico';
+    })();
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru&family=Varela+Round&display=swap" rel="stylesheet">
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+            appId: "f1fddbbe-ea99-48be-989c-effed57c9f03",
+            allowLocalhostAsSecureOrigin: true,
+            notifyButton: { enable: false },
+            serviceWorkerParam: { scope: "/" },
+            serviceWorkerPath: "OneSignalSDKWorker.js"
+        });
+    });
+    </script>
 </head>
 <body>
 <div id="app">
@@ -40,8 +67,12 @@
             <div class="summary-card card-events"><span class="card-label">予定</span><span class="card-number" id="event-count">0</span><span class="card-sub">今日</span></div>
         </section>
 
-        <section class="section-block"><div class="section-header-row"><h2 class="section-title">直近の予定</h2><button class="add-btn" id="open-event-page" type="button">予定を追加</button></div><ul class="event-list" id="event-list"></ul></section>
-        <section class="section-block"><div class="section-header-row"><h2 class="section-title">タスク</h2><button class="add-btn" id="open-category-modal" type="button">カテゴリー管理</button></div><div id="tasks-container"></div></section>
+        <section class="section-block"><div class="section-header-row"><h2 class="section-title">直近のタスク</h2></div><ul class="event-list" id="near-task-list"></ul></section>
+        <section class="section-block">
+            <div class="section-header-row"><h2 class="section-title">タスク</h2><button class="add-btn" id="open-category-modal" type="button">カテゴリー管理</button></div>
+            <div class="search-bar" style="margin-bottom:4px;"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="task-search" type="text" placeholder="タスクを検索..."></div>
+            <div id="tasks-container"></div>
+        </section>
     </main>
 
     <button class="fab-add-btn" id="open-task-modal" type="button" aria-label="タスクを追加">
@@ -56,23 +87,90 @@
 </div>
 
 <div class="modal-overlay" id="task-modal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
         <p class="modal-title" id="task-modal-title">タスクを追加</p>
-        <div class="modal-field"><label class="modal-label" for="task-input-text">タスク名</label><input class="modal-input" id="task-input-text" type="text" placeholder="例: 企画書の修正"></div>
-        <div class="modal-field"><label class="modal-label" for="task-input-category">カテゴリー</label><div style="display:flex; gap:8px;"><select class="modal-input" id="task-input-category" style="flex:1;"></select><button class="btn-cancel" id="add-category-btn" type="button" style="flex:0 0 auto; padding:0 16px;">追加</button></div></div>
-        <div class="modal-row"><div class="modal-field"><label class="modal-label" for="task-input-due">期限</label><input class="modal-input" id="task-input-due" type="date"></div><div class="modal-field"><label class="modal-label" for="task-input-time">時刻</label><input class="modal-input" id="task-input-time" type="time"></div></div>
-        <div class="modal-field attachment-file"><label class="modal-label" for="task-input-files">添付ファイル</label><input class="modal-input" id="task-input-files" type="file" accept="image/*" multiple style="display:none;"><button class="file-upload-btn" id="file-upload-btn" type="button">ファイルを選択</button><div class="attachment-preview" id="task-attachment-preview"></div></div>
-        <div class="modal-field"><label class="modal-label">緊急</label><label class="toggle-label"><input type="checkbox" id="task-input-urgent"><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-text">急ぎ</span></label></div>
-        <div class="modal-actions"><button class="btn-cancel" id="task-modal-cancel" type="button">キャンセル</button><button class="btn-save" id="task-modal-save" type="button">保存する</button></div>
+        <div class="modal-body">
+            <div class="modal-field"><label class="modal-label" for="task-input-text">タスク名</label><input class="modal-input" id="task-input-text" type="text" placeholder="例: 企画書の修正"></div>
+            <div class="modal-field"><label class="modal-label" for="task-input-category">カテゴリー</label><div style="display:flex; gap:8px;"><select class="modal-input" id="task-input-category" style="flex:1;"></select><button class="btn-save" id="add-category-btn" type="button" style="flex:0 0 auto; padding:0 16px;">追加</button></div></div>
+            <div class="modal-row"><div class="modal-field"><label class="modal-label" for="task-input-due">期限</label><input class="modal-input" id="task-input-due" type="date" max="2099-12-31"></div><div class="modal-field"><label class="modal-label" for="task-input-time">時刻</label><input class="modal-input" id="task-input-time" type="time"></div></div>
+            <div class="modal-field">
+                <label class="modal-label" for="task-notif-offset-input">通知タイミング（分前）</label>
+                <div class="offset-input-row">
+                    <input class="modal-input" id="task-notif-offset-input" type="number" min="0" max="10080" step="1" value="60" placeholder="分前" aria-label="通知する分数">
+                    <button class="btn-save" id="task-add-offset-btn" type="button" style="flex:0 0 auto; padding:0 14px; font-size:12px;">追加</button>
+                </div>
+                <div class="offset-list" id="task-notif-offset-list"></div>
+                <p style="font-size:11px; color:var(--text-muted); margin:4px 0 0 0;">未設定の場合は設定画面の通知タイミングを使用します</p>
+            </div>
+            <div class="modal-field"><label class="modal-label" for="task-input-recurring">繰り返し</label><select class="modal-input" id="task-input-recurring"><option value="">なし</option><option value="daily">毎日</option><option value="weekly">毎週</option><option value="monthly">毎月</option></select></div>
+            <div class="modal-field attachment-file"><label class="modal-label" for="task-input-files">添付ファイル</label><input class="modal-input" id="task-input-files" type="file" multiple style="display:none;"><button class="file-upload-btn" id="file-upload-btn" type="button">ファイルを選択</button><div class="attachment-preview" id="task-attachment-preview"></div></div>
+            <div class="modal-field"><label class="modal-label" for="task-input-memo">メモ</label><textarea class="modal-input" id="task-input-memo" rows="2" placeholder="短いメモ..."></textarea></div>
+            <div class="modal-field"><label class="modal-label">緊急</label><label class="toggle-label"><input type="checkbox" id="task-input-urgent"><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-text">急ぎ</span></label></div>
+        </div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="task-modal-cancel" type="button">キャンセル</button><button class="btn-save" id="task-modal-save" type="button">保存する</button></div>
     </div>
 </div>
 
 <div class="modal-overlay" id="category-modal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
         <p class="modal-title" id="category-modal-title">カテゴリー管理</p>
-        <div class="modal-field"><label class="modal-label" for="category-input-name">新しいカテゴリー</label><div style="display:flex; gap:8px;"><input class="modal-input" id="category-input-name" type="text" placeholder="例: 学校" style="flex:1;"><button class="btn-save" id="category-add-save" type="button" style="flex:0 0 auto;">追加</button></div></div>
-        <div class="category-list" id="category-list"></div>
-        <div class="modal-actions"><button class="btn-cancel" id="category-modal-close" type="button">閉じる</button></div>
+        <div class="modal-body">
+            <div class="modal-field"><label class="modal-label" for="category-input-name">新しいカテゴリー</label><div style="display:flex; gap:8px;"><input class="modal-input" id="category-input-name" type="text" placeholder="例: 学校" style="flex:1;"><button class="btn-save" id="category-add-save" type="button" style="flex:0 0 auto;">追加</button></div></div>
+            <div class="category-list" id="category-list"></div>
+        </div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="category-modal-close" type="button">閉じる</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="task-detail-modal" aria-hidden="true">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+        <p class="modal-title" id="task-detail-title">タスク詳細</p>
+        <div class="modal-body">
+            <div class="modal-field"><span class="modal-label">タスク名</span><p id="detail-text" style="font-size:15px; font-weight:600; color:var(--text-primary); margin:0;"></p></div>
+            <div class="modal-row"><div class="modal-field"><span class="modal-label">期限</span><p id="detail-due" style="font-size:14px; color:var(--text-secondary); margin:0;"></p></div><div class="modal-field"><span class="modal-label">カテゴリー</span><p id="detail-category" style="font-size:14px; color:var(--text-secondary); margin:0;"></p></div></div>
+            <div class="modal-field"><span class="modal-label">メモ</span><p id="detail-memo" style="font-size:14px; color:var(--text-secondary); margin:0; white-space:pre-wrap;"></p></div>
+            <div class="modal-field"><span class="modal-label">評価</span><div class="star-rating" id="detail-stars"></div></div>
+            <div class="modal-field"><span class="modal-label">添付ファイル</span><div id="detail-attachments" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;"></div></div>
+        </div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="task-detail-close" type="button">閉じる</button><button class="btn-save" id="task-detail-edit" type="button">編集</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirm-modal" aria-hidden="true">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <p class="modal-title" id="confirm-title">確認</p>
+        <div class="modal-body">
+            <p id="confirm-msg" style="font-size:14px; color:var(--text-secondary); margin:0 0 12px 0;"></p>
+            <div class="modal-field">
+                <label class="modal-label" for="confirm-input">タスク名を入力</label>
+                <input type="text" id="confirm-input" class="modal-input" placeholder="上記の名前を完全一致で入力" autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-actions modal-actions-sticky">
+            <button class="btn-cancel" id="confirm-cancel" type="button">キャンセル</button>
+            <button class="btn-save" id="confirm-ok" type="button" disabled>実行する</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="rating-modal" aria-hidden="true">
+    <div class="modal modal-scrollable" role="dialog" aria-modal="true" aria-labelledby="rating-title">
+        <p class="modal-title" id="rating-title">タスク完了！</p>
+        <div class="modal-body">
+            <p style="font-size:14px; color:var(--text-secondary); margin:0 0 12px 0;">お疲れ様でした！このタスクの振り返りを記録しましょう。</p>
+            <div class="modal-field">
+                <label class="modal-label">評価</label>
+                <div class="star-rating" id="rating-stars" style="justify-content:center; margin:8px 0;"></div>
+            </div>
+            <div class="modal-field">
+                <label class="modal-label" for="rating-memo">次に活かすメモ</label>
+                <textarea class="modal-input" id="rating-memo" rows="3" placeholder="次回どう改善する？何がうまくいった？"></textarea>
+            </div>
+        </div>
+        <div class="modal-actions modal-actions-sticky">
+            <button class="btn-cancel" id="rating-skip" type="button">スキップ</button>
+            <button class="btn-save" id="rating-save" type="button">保存する</button>
+        </div>
     </div>
 </div>
 
@@ -92,24 +190,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputTime = document.getElementById('task-input-time');
     const inputCat = document.getElementById('task-input-category');
     const inputUrgent = document.getElementById('task-input-urgent');
+    const inputMemo = document.getElementById('task-input-memo');
+    const inputRecurring = document.getElementById('task-input-recurring');
     const inputFiles = document.getElementById('task-input-files');
     const attachmentPreview = document.getElementById('task-attachment-preview');
     const categoryModal = document.getElementById('category-modal');
     const categoryInput = document.getElementById('category-input-name');
+    const detailModal = document.getElementById('task-detail-modal');
+    const searchInput = document.getElementById('task-search');
     let pendingAttachments = [];
+    let currentSearch = '';
+    let editingTaskId = null;
+    let _currentDetailTask = null;
+    let pendingNotifOffsets = [];
+    const notifOffsetInput = document.getElementById('task-notif-offset-input');
+    const notifOffsetList = document.getElementById('task-notif-offset-list');
+    const ratingModal = document.getElementById('rating-modal');
+    const ratingStars = document.getElementById('rating-stars');
+    const ratingMemo = document.getElementById('rating-memo');
+    let _ratingTaskId = null;
+    let _currentRating = 0;
 
-    function openModal() {
-        inputText.value = '';
-        inputDue.value = todayString();
-        inputTime.value = '';
+    function openModal(task) {
+        var isTaskObj = task && typeof task === 'object' && typeof task.id !== 'undefined';
+        editingTaskId = isTaskObj ? task.id : null;
+        document.getElementById('task-modal-title').textContent = isTaskObj ? 'タスクを編集' : 'タスクを追加';
+        inputText.value = isTaskObj ? (task.text || '') : '';
+        inputDue.value = isTaskObj ? (task.due || todayString()) : todayString();
+        inputTime.value = isTaskObj ? (task.time || '') : '';
+        inputMemo.value = isTaskObj ? (task.memo || '') : '';
+        inputRecurring.value = isTaskObj ? (task.recurring || '') : '';
         inputFiles.value = '';
-        pendingAttachments = [];
+        pendingAttachments = isTaskObj && task.attachments ? task.attachments.slice() : [];
         renderAttachmentPreview();
-        inputUrgent.checked = false;
+        pendingNotifOffsets = isTaskObj && Array.isArray(task.notifOffsets) ? task.notifOffsets.slice() : [];
+        renderNotifOffsetList();
+        inputUrgent.checked = isTaskObj ? Boolean(task.urgent) : false;
         renderCategorySelect();
+        if (isTaskObj && task.category) inputCat.value = task.category;
         modal.classList.remove('closing');
         modal.classList.add('open');
         modal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
         setTimeout(function() { inputText.focus(); }, 120);
     }
 
@@ -117,26 +239,168 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modal.classList.contains('open')) return;
         modal.classList.add('closing');
         modal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
         setTimeout(function() { modal.classList.remove('open', 'closing'); }, 280);
     }
 
+    function openDetailModal(task) {
+        _currentDetailTask = task;
+        document.getElementById('detail-text').textContent = task.text;
+        document.getElementById('detail-due').textContent = (task.due ? formatDue(task.due) : '期限なし') + (task.time ? ' ' + task.time : '');
+        document.getElementById('detail-category').textContent = task.category;
+        document.getElementById('detail-memo').textContent = task.memo || 'メモはありません';
+        var starsContainer = document.getElementById('detail-stars');
+        var rating = Number(task.rating) || 0;
+        starsContainer.innerHTML = '';
+        for (var s = 1; s <= 5; s++) {
+            var star = document.createElement('span');
+            star.textContent = '★';
+            star.style.cssText = 'font-size:20px; cursor:pointer; color:' + (s <= rating ? 'var(--accent)' : 'var(--border)') + '; margin-right:2px; transition:color 0.15s;';
+            star.addEventListener('click', (function(starVal) {
+                return function() {
+                    if (!task.done) { showToast('完了後に評価できます'); return; }
+                    updateTask(task.id, { rating: starVal });
+                    openDetailModal(getTasks().find(function(t) { return t.id === task.id; }));
+                    renderAll();
+                };
+            })(s));
+            starsContainer.appendChild(star);
+        }
+        var attachmentContainer = document.getElementById('detail-attachments');
+        if (task.attachments && task.attachments.length) {
+            attachmentContainer.innerHTML = task.attachments.map(function(file) {
+                if (file.type.indexOf('image/') === 0 || file.type.indexOf('video/') === 0) {
+                    return '<a href="' + escHtml(file.dataUrl) + '" target="_blank" rel="noopener" style="display:block; border-radius:12px; overflow:hidden; border:1px solid var(--border);">' + (file.type.indexOf('image/') === 0 ? '<img src="' + escHtml(file.dataUrl) + '" alt="" style="width:100%; max-height:260px; object-fit:cover; display:block;">' : '<video src="' + escHtml(file.dataUrl) + '" controls style="width:100%; max-height:260px; display:block;"></video>') + '</a>';
+                }
+                return '<a href="' + escHtml(file.dataUrl) + '" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); color:var(--text-primary); font-size:13px; font-weight:600; text-decoration:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>' + escHtml(file.name) + '</a>';
+            }).join('');
+        } else {
+            attachmentContainer.innerHTML = '<p style="font-size:13px; color:var(--text-muted); margin:0;">添付ファイルはありません</p>';
+        }
+        detailModal.classList.remove('closing');
+        detailModal.classList.add('open');
+        detailModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
+    }
+
+    function closeDetailModal() {
+        if (!detailModal.classList.contains('open')) return;
+        detailModal.classList.add('closing');
+        detailModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
+        setTimeout(function() { detailModal.classList.remove('open', 'closing'); }, 280);
+    }
+
     function renderAll() {
+        renderNearTasks();
         renderTasks();
-        renderEvents();
         renderCounts();
         renderCategorySelect();
     }
 
+    function isNearTask(task) {
+        if (!task || task.done) return false;
+        return task.due === todayString() || task.due === tomorrowString() || isOverdue(task.due, task.time);
+    }
+
+    function renderNearTasks() {
+        const list = document.getElementById('near-task-list');
+        const nearTasks = getTasks().filter(isNearTask).sort(function(a, b) {
+            if (!a.due && !b.due) return 0;
+            if (!a.due) return 1;
+            if (!b.due) return -1;
+            var da = a.due + (a.time || '23:59');
+            var db = b.due + (b.time || '23:59');
+            return da.localeCompare(db);
+        });
+
+        list.innerHTML = '';
+        if (nearTasks.length === 0) {
+            list.innerHTML = '<li class="no-events">期限が近いタスクはありません</li>';
+            return;
+        }
+
+        const colors = getCategoryColors();
+        nearTasks.forEach(function(task) {
+            const overdue = isOverdue(task.due, task.time);
+            const dueUrgency = getDueUrgency(task.due);
+            const color = colors[task.category] || '#A0A0B8';
+            const li = document.createElement('li');
+            li.className = 'event-item near-task-item' + (overdue ? ' overdue-fill' : ' due-soon');
+            li.style.setProperty('--category-color', color);
+
+            const dueText = escHtml(formatDue(task.due) + (task.time ? ' ' + task.time : ''));
+            const recurringBadge = task.recurring ? '<span class="recurring-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>' + (task.recurring === 'daily' ? '毎日' : task.recurring === 'weekly' ? '毎週' : '毎月') + '</span>' : '';
+            const dueBadge = dueUrgency === 'today' ? '<span class="due-badge">今日</span>' : (dueUrgency === 'tomorrow' ? '<span class="due-badge">明日</span>' : '');
+            const attachIcon = (task.attachments && task.attachments.length) ? '<span class="attach-icon" title="添付ファイル ' + task.attachments.length + '件"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span>' : '';
+
+            li.innerHTML =
+                '<button class="task-check near-task-check' + (task.done ? ' checked' : '') + '" data-id="' + task.id + '" type="button" aria-label="完了を切り替え"></button>' +
+                '<span class="event-time">' + dueText + '</span>' +
+                '<div class="event-info">' +
+                    '<span class="event-name" data-id="' + task.id + '">' + escHtml(task.text) + dueBadge + recurringBadge + attachIcon + '</span>' +
+                    '<span class="event-loc">' + escHtml(task.category) + '</span>' +
+                '</div>' +
+                '<button class="event-delete" type="button" data-id="' + task.id + '" aria-label="削除">×</button>';
+            list.appendChild(li);
+        });
+
+        list.querySelectorAll('.near-task-check').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var id = Number(button.dataset.id);
+                var task = getTasks().find(function(t) { return t.id === id; });
+                if (!task) return;
+                openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+            });
+        });
+        list.querySelectorAll('.event-delete').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const id = Number(button.dataset.id);
+                const task = getTasks().find(function(t) { return t.id === id; });
+                if (!task) return;
+                openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+            });
+        });
+        list.querySelectorAll('.event-name').forEach(function(span) {
+            span.addEventListener('click', function() {
+                const task = getTasks().find(function(t) { return t.id === Number(span.dataset.id); });
+                if (task) openDetailModal(task);
+            });
+        });
+    }
+
     function renderTasks() {
         const container = document.getElementById('tasks-container');
-        const tasks = getTasks();
+        let tasks = getTasks();
         const colors = getCategoryColors();
-        const grouped = new Map(getCategories().map(category => [category, []]));
+        const grouped = new Map(getCategories().map(function(category) { return [category, []]; }));
+
+        if (currentSearch) {
+            const q = currentSearch.toLowerCase();
+            tasks = tasks.filter(function(task) {
+                var inText = (task.text || '').toLowerCase().indexOf(q) !== -1;
+                var inCat = (task.category || '').toLowerCase().indexOf(q) !== -1;
+                var inMemo = (task.memo || '').toLowerCase().indexOf(q) !== -1;
+                return inText || inCat || inMemo;
+            });
+        }
+
+        tasks.sort(function(a, b) {
+            if (a.done !== b.done) return a.done ? 1 : -1;
+            if (!a.due && !b.due) return 0;
+            if (!a.due) return 1;
+            if (!b.due) return -1;
+            var da = a.due + (a.time || '23:59');
+            var db = b.due + (b.time || '23:59');
+            return da.localeCompare(db);
+        });
+
         tasks.forEach(function(task) {
             const category = task.category || 'その他';
             if (!grouped.has(category)) grouped.set(category, []);
             grouped.get(category).push(task);
         });
+
         container.innerHTML = '';
         grouped.forEach(function(catTasks, category) {
             if (catTasks.length === 0) return;
@@ -149,16 +413,18 @@ document.addEventListener('DOMContentLoaded', function() {
             summary.className = 'category-header';
             summary.style.background = color;
             summary.style.color = textColor;
-            summary.innerHTML = '<span>' + escHtml(category) + '</span> <span style="opacity:0.72; font-size:14px; font-weight:normal;">' + catTasks.filter(task => !task.done).length + '件</span>';
+            summary.innerHTML = '<span>' + escHtml(category) + '</span> <span style="opacity:0.72; font-size:14px; font-weight:normal;">' + catTasks.filter(function(task) { return !task.done; }).length + '件</span>';
             details.appendChild(summary);
             const list = document.createElement('ul');
             list.className = 'task-list';
             catTasks.forEach(function(task) {
                 const li = document.createElement('li');
-                li.className = 'task-item' + (task.urgent ? ' urgent' : '');
+                const overdue = !task.done && isOverdue(task.due, task.time);
+                li.className = 'task-item' + (task.urgent ? ' urgent' : '') + (overdue ? ' overdue' : '');
                 li.style.setProperty('--category-color', color);
                 const dueText = task.done ? '完了' : escHtml(formatDue(task.due) + (task.time ? ' ' + task.time : ''));
-                li.innerHTML = '<button class="task-check' + (task.done ? ' checked' : '') + '" data-id="' + task.id + '" type="button" aria-label="完了を切り替え"></button><span class="task-text' + (task.done ? ' done' : '') + '">' + escHtml(task.text) + '</span><span class="task-due' + (task.done ? ' done' : task.urgent ? ' urgent' : '') + '">' + dueText + '</span><button class="task-delete" data-id="' + task.id + '" type="button" aria-label="削除">×</button>';
+                const recurringBadge = task.recurring ? '<span class="recurring-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>' + (task.recurring === 'daily' ? '毎日' : task.recurring === 'weekly' ? '毎週' : '毎月') + '</span>' : '';
+                li.innerHTML = '<button class="task-check' + (task.done ? ' checked' : '') + '" data-id="' + task.id + '" type="button" aria-label="完了を切り替え"></button><span class="task-text' + (task.done ? ' done' : '') + '" data-id="' + task.id + '">' + escHtml(task.text) + recurringBadge + '</span><span class="task-due' + (task.done ? ' done' : task.urgent ? ' urgent' : '') + '">' + dueText + '</span><button class="task-delete" data-id="' + task.id + '" type="button" aria-label="削除">×</button>';
                 if (task.attachments.length) {
                     const files = document.createElement('div');
                     files.className = 'task-attachments';
@@ -173,12 +439,32 @@ document.addEventListener('DOMContentLoaded', function() {
             details.appendChild(list);
             container.appendChild(details);
         });
-        container.querySelectorAll('.task-check').forEach(button => button.addEventListener('click', function() { toggleTask(Number(button.dataset.id)); renderAll(); }));
-        container.querySelectorAll('.task-delete').forEach(button => button.addEventListener('click', function() { deleteTask(Number(button.dataset.id)); renderAll(); }));
+        container.querySelectorAll('.task-check').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var id = Number(button.dataset.id);
+                var task = getTasks().find(function(t) { return t.id === id; });
+                if (!task) return;
+                openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+            });
+        });
+        container.querySelectorAll('.task-delete').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var id = Number(button.dataset.id);
+                var task = getTasks().find(function(t) { return t.id === id; });
+                if (!task) return;
+                openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+            });
+        });
+        container.querySelectorAll('.task-text').forEach(function(span) {
+            span.addEventListener('click', function() {
+                const task = getTasks().find(function(t) { return t.id === Number(span.dataset.id); });
+                if (task) openDetailModal(task);
+            });
+        });
     }
 
     function readFiles(files) {
-        return Promise.all(Array.from(files).map(function(file) {
+        return Promise.allSettled(Array.from(files).map(function(file) {
             return new Promise(function(resolve, reject) {
                 const reader = new FileReader();
                 reader.onload = function() {
@@ -187,7 +473,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
-        }));
+        })).then(function(results) {
+            const loaded = results.filter(function(r) { return r.status === 'fulfilled'; }).map(function(r) { return r.value; });
+            if (loaded.length !== results.length) showToast('一部の添付ファイルを読み込めませんでした');
+            return loaded;
+        });
     }
 
     function renderAttachmentPreview() {
@@ -197,12 +487,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
 
+    function renderNotifOffsetList() {
+        notifOffsetList.innerHTML = pendingNotifOffsets.map(function(offset) {
+            return '<button class="offset-chip" type="button" data-offset="' + offset + '">' + formatOffsetLabel(offset) + ' ×</button>';
+        }).join('');
+        notifOffsetList.querySelectorAll('.offset-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                var val = Number(chip.dataset.offset);
+                pendingNotifOffsets = pendingNotifOffsets.filter(function(v) { return v !== val; });
+                renderNotifOffsetList();
+            });
+        });
+    }
+
     function openCategoryModal() {
         categoryInput.value = '';
         renderCategoryManager();
         categoryModal.classList.remove('closing');
         categoryModal.classList.add('open');
         categoryModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
         setTimeout(function() { categoryInput.focus(); }, 120);
     }
 
@@ -210,6 +514,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!categoryModal.classList.contains('open')) return;
         categoryModal.classList.add('closing');
         categoryModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
         setTimeout(function() { categoryModal.classList.remove('open', 'closing'); }, 280);
     }
 
@@ -224,11 +529,17 @@ document.addEventListener('DOMContentLoaded', function() {
             row.className = 'category-manager-item';
             row.style.background = color;
             row.style.color = textColor;
-            row.innerHTML = '<span>' + escHtml(category) + '</span><input type="color" class="category-color-picker" value="' + escHtml(color) + '" data-category="' + escHtml(category) + '" aria-label="色を変更"><button class="category-delete" type="button" data-category="' + escHtml(category) + '" aria-label="削除">×</button>';
+            row.innerHTML = '<span>' + escHtml(category) + '</span><div class="category-actions"><input type="color" class="category-color-picker" value="' + escHtml(color) + '" data-category="' + escHtml(category) + '" aria-label="色を変更" style="position:absolute;opacity:0;width:1px;height:1px;padding:0;border:none;"><button class="category-color-trigger" type="button" aria-label="色を変更" title="色を変更"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 5-5"/><path d="m14 4 6 6"/><path d="m13 5 6 6-9 9H4v-6l9-9z"/></svg></button><button class="category-delete" type="button" data-category="' + escHtml(category) + '" aria-label="削除">×</button></div>';
             list.appendChild(row);
         });
+        list.querySelectorAll('.category-color-trigger').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var picker = btn.previousElementSibling;
+                if (picker) picker.click();
+            });
+        });
         list.querySelectorAll('.category-color-picker').forEach(function(picker) {
-            picker.addEventListener('input', function() {
+            picker.addEventListener('change', function() {
                 const category = picker.dataset.category;
                 const newColors = getCategoryColors();
                 newColors[category] = picker.value;
@@ -241,32 +552,16 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const category = button.dataset.category;
                 if (DEFAULT_CATEGORIES.includes(category)) return;
-                saveCategories(getCategories().filter(item => item !== category));
-                saveTasks(getTasks().map(task => task.category === category ? { ...task, category: 'その他' } : task));
+                saveCategories(getCategories().filter(function(item) { return item !== category; }));
+                saveTasks(getTasks().map(function(task) { return task.category === category ? { ...task, category: 'その他' } : task; }));
                 renderCategoryManager();
                 renderAll();
             });
         });
     }
 
-    function renderEvents() {
-        const list = document.getElementById('event-list');
-        const events = getEvents(todayString()).sort((a, b) => a.time.localeCompare(b.time));
-        list.innerHTML = '';
-        if (events.length === 0) {
-            list.innerHTML = '<li class="no-events">今日の予定はありません</li>';
-            return;
-        }
-        events.forEach(function(event) {
-            const li = document.createElement('li');
-            li.className = 'event-item';
-            li.innerHTML = '<span class="event-time">' + escHtml(event.time) + '</span><div class="event-info"><span class="event-name">' + escHtml(event.name) + '</span>' + (event.loc ? '<span class="event-loc">' + escHtml(event.loc) + '</span>' : '') + '</div><span class="event-tag tag-' + escHtml(event.tag) + '">' + escHtml(event.tagName) + '</span>';
-            list.appendChild(li);
-        });
-    }
-
     function renderCounts() {
-        document.getElementById('task-count').textContent = getTasks().filter(task => !task.done).length;
+        document.getElementById('task-count').textContent = getTasks().filter(function(task) { return !task.done; }).length;
         document.getElementById('event-count').textContent = getEvents(todayString()).length;
     }
 
@@ -284,22 +579,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.getElementById('open-task-modal').addEventListener('click', openModal);
+    document.getElementById('open-task-modal').addEventListener('click', function() { openModal(); });
     document.getElementById('file-upload-btn').addEventListener('click', function() { inputFiles.click(); });
-    document.getElementById('open-event-page').addEventListener('click', function() { navigateWithPageBlur('calender.html'); });
     document.getElementById('task-modal-cancel').addEventListener('click', closeModal);
     modal.addEventListener('click', function(event) { if (event.target === modal) closeModal(); });
     document.getElementById('task-modal-save').addEventListener('click', function() {
         const text = inputText.value.trim();
         if (!text) { inputText.focus(); return; }
-        addTask(text, inputDue.value, inputUrgent.checked, inputCat.value, inputTime.value, pendingAttachments);
-        closeModal();
-        renderAll();
+        var payload = {
+            text: text,
+            due: inputDue.value,
+            urgent: inputUrgent.checked,
+            category: inputCat.value,
+            time: inputTime.value,
+            attachments: pendingAttachments,
+            memo: inputMemo.value.trim(),
+            recurring: inputRecurring.value,
+            notifOffsets: pendingNotifOffsets.length ? pendingNotifOffsets : null
+        };
+        if (editingTaskId !== null) {
+            updateTask(editingTaskId, payload);
+            closeModal();
+            renderAll();
+            showToast('タスクを更新しました');
+        } else {
+            addTask(text, inputDue.value, inputUrgent.checked, inputCat.value, inputTime.value, pendingAttachments, inputMemo.value.trim(), inputRecurring.value, pendingNotifOffsets.length ? pendingNotifOffsets : null, '', null);
+            closeModal();
+            renderAll();
+            showToast(window._logcalLastAttachmentSaveFailed ? 'タスクを追加しました（添付は容量超過で保存されませんでした）' : 'タスクを追加しました');
+        }
     });
-    document.getElementById('add-category-btn').addEventListener('click', function() {
-        openCategoryModal();
+    document.getElementById('task-add-offset-btn').addEventListener('click', function() {
+        var val = Number(notifOffsetInput.value);
+        if (!Number.isFinite(val) || val < 0 || val > 10080) { notifOffsetInput.focus(); return; }
+        val = Math.round(val);
+        if (!pendingNotifOffsets.includes(val)) {
+            pendingNotifOffsets.push(val);
+            pendingNotifOffsets.sort(function(a, b) { return b - a; });
+        }
+        notifOffsetInput.value = '60';
+        renderNotifOffsetList();
     });
+    document.getElementById('add-category-btn').addEventListener('click', openCategoryModal);
     inputFiles.addEventListener('change', async function() {
+        if (!inputFiles.files || inputFiles.files.length === 0) return;
         pendingAttachments = await readFiles(inputFiles.files);
         renderAttachmentPreview();
     });
@@ -316,8 +639,135 @@ document.addEventListener('DOMContentLoaded', function() {
         categoryInput.value = '';
         renderAll();
     });
+    document.getElementById('task-detail-close').addEventListener('click', closeDetailModal);
+    document.getElementById('task-detail-edit').addEventListener('click', function() {
+        if (_currentDetailTask) {
+            closeDetailModal();
+            setTimeout(function() { openModal(_currentDetailTask); }, 300);
+        }
+    });
+    detailModal.addEventListener('click', function(event) { if (event.target === detailModal) closeDetailModal(); });
+    searchInput.addEventListener('input', function() { currentSearch = searchInput.value.trim(); renderTasks(); });
     categoryInput.addEventListener('keydown', function(event) { if (event.key === 'Enter') document.getElementById('category-add-save').click(); });
     inputText.addEventListener('keydown', function(event) { if (event.key === 'Enter') document.getElementById('task-modal-save').click(); });
+    inputDue.addEventListener('blur', function() {
+        if (inputDue.value && inputDue.value.length > 10) {
+            inputDue.value = inputDue.value.slice(0, 10);
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            if (confirmModal.classList.contains('open')) { closeConfirm(); }
+            else if (detailModal.classList.contains('open')) { closeDetailModal(); }
+            else if (categoryModal.classList.contains('open')) { closeCategoryModal(); }
+            else if (modal.classList.contains('open')) { closeModal(); }
+        }
+    });
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmInput = document.getElementById('confirm-input');
+    const confirmOk = document.getElementById('confirm-ok');
+    const confirmCancel = document.getElementById('confirm-cancel');
+    const confirmMsg = document.getElementById('confirm-msg');
+    let _confirmTargetId = null;
+    let _confirmExpected = '';
+    let _confirmCallback = null;
+
+    function openConfirm(title, message, expectedName, onOk) {
+        _confirmTargetId = null;
+        _confirmExpected = expectedName;
+        _confirmCallback = onOk;
+        document.getElementById('confirm-title').textContent = title;
+        confirmMsg.textContent = message;
+        confirmInput.value = '';
+        confirmInput.style.borderColor = '';
+        confirmOk.disabled = true;
+        confirmModal.classList.add('open');
+        confirmModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
+        confirmInput.focus();
+    }
+
+    function closeConfirm() {
+        confirmModal.classList.remove('open');
+        confirmModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
+        _confirmTargetId = null;
+        _confirmExpected = '';
+        _confirmCallback = null;
+    }
+
+    confirmCancel.addEventListener('click', closeConfirm);
+    confirmOk.addEventListener('click', function() {
+        if (confirmInput.value.trim() !== _confirmExpected) return;
+        if (_confirmCallback) _confirmCallback();
+        closeConfirm();
+    });
+    confirmInput.addEventListener('input', function() {
+        const ok = confirmInput.value.trim() === _confirmExpected;
+        confirmOk.disabled = !ok;
+        confirmInput.style.borderColor = ok ? 'rgba(76,175,80,0.6)' : 'rgba(226,75,74,0.6)';
+    });
+    confirmInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !confirmOk.disabled) { confirmOk.click(); }
+        if (event.key === 'Escape') { closeConfirm(); }
+    });
+
+    function openRatingModal(taskId) {
+        var task = getTasks().find(function(t) { return t.id === taskId; });
+        if (!task || !task.done) return;
+        _ratingTaskId = taskId;
+        _currentRating = 0;
+        ratingMemo.value = '';
+        renderRatingStars();
+        ratingModal.classList.remove('closing');
+        ratingModal.classList.add('open');
+        ratingModal.setAttribute('aria-hidden', 'false');
+        lockBodyScroll();
+    }
+
+    function closeRatingModal() {
+        if (!ratingModal.classList.contains('open')) return;
+        ratingModal.classList.add('closing');
+        ratingModal.setAttribute('aria-hidden', 'true');
+        unlockBodyScroll();
+        setTimeout(function() { ratingModal.classList.remove('open', 'closing'); }, 280);
+    }
+
+    function renderRatingStars() {
+        ratingStars.innerHTML = '';
+        for (var s = 1; s <= 5; s++) {
+            var star = document.createElement('span');
+            star.textContent = '★';
+            star.style.cssText = 'font-size:28px; cursor:pointer; color:' + (s <= _currentRating ? 'var(--accent)' : 'var(--border)') + '; margin:0 4px; transition:color 0.15s, transform 0.1s;';
+            star.addEventListener('mouseenter', function() { this.style.transform = 'scale(1.2)'; });
+            star.addEventListener('mouseleave', function() { this.style.transform = 'scale(1)'; });
+            star.addEventListener('click', (function(starVal) {
+                return function() {
+                    _currentRating = starVal;
+                    renderRatingStars();
+                };
+            })(s));
+            ratingStars.appendChild(star);
+        }
+    }
+
+    document.getElementById('rating-skip').addEventListener('click', closeRatingModal);
+    document.getElementById('rating-save').addEventListener('click', function() {
+        if (_ratingTaskId !== null) {
+            var memo = ratingMemo.value.trim();
+            var updates = { rating: _currentRating };
+            if (memo) {
+                updates.memo = (getTasks().find(function(t) { return t.id === _ratingTaskId; }).memo || '') + '\n\n【振り返り】\n' + memo;
+            }
+            updateTask(_ratingTaskId, updates);
+            renderAll();
+            showToast('評価を保存しました');
+        }
+        closeRatingModal();
+    });
+    ratingModal.addEventListener('click', function(event) { if (event.target === ratingModal) closeRatingModal(); });
 
     window._planlyPageRefresh = renderAll;
     renderAll();

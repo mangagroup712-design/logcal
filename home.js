@@ -30,9 +30,9 @@ function setupTheme() {
 
 function setupTabs() {
     const pages = {
-        'home-tab': 'index.html',
-        'calender-tab': 'calender.html',
-        'settings-tab': 'settings.html'
+        'home-tab': '/index',
+        'calender-tab': '/calender',
+        'settings-tab': '/settings'
     };
 
     Object.entries(pages).forEach(function([id, url]) {

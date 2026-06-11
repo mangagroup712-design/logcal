@@ -854,7 +854,7 @@
             <div class="modal-field"><span class="modal-label">場所</span><p id="event-detail-loc" style="font-size:14px; color:var(--text-secondary); margin:0;"></p></div>
             <div class="modal-field"><span class="modal-label">カテゴリー</span><p id="event-detail-tag" style="font-size:14px; color:var(--text-secondary); margin:0;"></p></div>
         </div>
-        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="event-detail-close" type="button">閉じる</button></div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="event-detail-close" type="button">閉じる</button><button class="btn-share" id="event-detail-share" type="button">共有</button></div>
     </div>
 </div>
 
@@ -1089,16 +1089,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (kind === 'task') {
                     var task = getTasks().find(function(t) { return t.id === id; });
                     if (!task) return;
-                    openConfirm('削除の確認', '「' + task.text + '」を削除します。', task.text, function() {
+                    if (getConfirmEnabled()) {
+                        openConfirm('削除の確認', '「' + task.text + '」を削除します。', task.text, function() {
+                            deleteTask(id);
+                            renderCalendar();
+                            renderSchedule();
+                        });
+                    } else {
                         deleteTask(id);
                         renderCalendar();
                         renderSchedule();
-                    });
+                    }
                 } else {
-                    if (!confirm('この予定を削除しますか？')) return;
-                    deleteEvent(id);
-                    renderCalendar();
-                    renderSchedule();
+                    if (getConfirmEnabled()) {
+                        openConfirm('削除の確認', 'この予定を削除しますか？', '削除', function() {
+                            deleteEvent(id);
+                            renderCalendar();
+                            renderSchedule();
+                        });
+                    } else {
+                        deleteEvent(id);
+                        renderCalendar();
+                        renderSchedule();
+                    }
                 }
             });
         });
@@ -1120,16 +1133,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 var id = Number(button.dataset.id);
                 var task = getTasks().find(function(t) { return t.id === id; });
                 if (!task) return;
-                openConfirm('完了の確認', '「' + task.text + '」を完了します。', task.text, function() {
+                if (getConfirmEnabled()) {
+                    openConfirm('完了の確認', '「' + task.text + '」を完了します。', task.text, function() {
+                        toggleTask(id);
+                        renderCalendar();
+                        renderSchedule();
+                    });
+                } else {
                     toggleTask(id);
                     renderCalendar();
                     renderSchedule();
-                });
+                }
             });
         });
     }
 
+    var _currentDetailItem = null;
+
     function openEventDetail(item) {
+        _currentDetailItem = item;
         var isTask = item.text !== undefined;
         document.getElementById('event-detail-name').textContent = isTask ? item.text : item.name;
         document.getElementById('event-detail-date').textContent = isTask ? (item.due ? formatDue(item.due) : '期限なし') : (item.date ? formatDue(item.date) : '日付なし');
@@ -1373,6 +1395,9 @@ document.addEventListener('DOMContentLoaded', function() {
         categoryInput.value = '';
     });
     document.getElementById('event-detail-close').addEventListener('click', closeEventDetail);
+    document.getElementById('event-detail-share').addEventListener('click', function() {
+        if (_currentDetailItem) shareTask(_currentDetailItem);
+    });
     detailModal.addEventListener('click', function(event) { if (event.target === detailModal) closeEventDetail(); });
     searchInput.addEventListener('input', function() { currentSearch = searchInput.value.trim(); renderSchedule(); });
 
@@ -1418,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderCalendar();
     renderSchedule();
     renderCategorySelect(eventCat);
+    checkImportFromHash();
 });
 </script>
 </body>

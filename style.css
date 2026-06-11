@@ -1118,6 +1118,18 @@ select.modal-input {
 .btn-save:hover  { opacity: 0.88; }
 .btn-save:active { transform: scale(0.97); }
 
+.btn-share {
+    flex: 1; padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-md);
+    background: var(--surface);
+    font-size: 14px; font-weight: 600;
+    color: var(--accent); cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+.btn-share:hover { background: var(--accent-light); }
+.btn-share:active { transform: scale(0.97); }
+
 
 /* ============================================================
    ⑰ トグルスイッチ（急ぎフラグ）

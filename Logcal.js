@@ -8,7 +8,8 @@ const PLANLY_KEYS = {
     notificationOffsets: 'planly_notification_offsets',
     firedNotifications: 'planly_fired_notifications',
     fcmToken: 'planly_fcm_token',
-    theme: 'logcal_theme'
+    theme: 'logcal_theme',
+    confirmEnabled: 'planly_confirm_enabled'
 };
 
 const DEFAULT_CATEGORIES = ['仕事', 'プライベート', '急ぎ', 'その他'];
@@ -396,6 +397,16 @@ function getNotificationOffsets() {
     return [...new Set(clean)].sort((a, b) => b - a);
 }
 
+function getConfirmEnabled() {
+    var saved = localStorage.getItem(PLANLY_KEYS.confirmEnabled);
+    return saved === null ? true : saved === 'true';
+}
+
+function setConfirmEnabled(enabled) {
+    localStorage.setItem(PLANLY_KEYS.confirmEnabled, String(Boolean(enabled)));
+    notifyOtherPages('confirmEnabled');
+}
+
 function saveNotificationOffsets(offsets) {
     const clean = [...new Set(offsets
         .map(value => Number(value))
@@ -633,6 +644,80 @@ function escHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function encodeTaskForUrl(item) {
+    var isTask = item.text !== undefined;
+    var payload = {
+        type: isTask ? 'task' : 'event',
+        text: isTask ? (item.text || '') : (item.name || ''),
+        due: isTask ? (item.due || '') : (item.date || ''),
+        time: item.time || '',
+        urgent: isTask ? Boolean(item.urgent) : false,
+        category: isTask ? (item.category || '') : (item.tagName || item.tag || ''),
+        memo: isTask ? (item.memo || '') : '',
+        recurring: item.recurring || ''
+    };
+    try {
+        var json = JSON.stringify(payload);
+        return btoa(unescape(encodeURIComponent(json)));
+    } catch (e) {
+        console.error('Encode failed', e);
+        return null;
+    }
+}
+
+function decodeTaskFromUrl(encoded) {
+    try {
+        var json = decodeURIComponent(escape(atob(encoded)));
+        return JSON.parse(json);
+    } catch (e) {
+        console.error('Decode failed', e);
+        return null;
+    }
+}
+
+function createTaskShareUrl(item) {
+    var encoded = encodeTaskForUrl(item);
+    if (!encoded) return null;
+    var base = (location.origin && location.origin !== 'null' && location.origin !== 'file://')
+        ? location.origin + location.pathname
+        : location.href.split('#')[0];
+    return base + '#import=' + encoded;
+}
+
+function shareTask(item) {
+    var url = createTaskShareUrl(item);
+    if (!url) { showToast('共有URLの生成に失敗しました'); return; }
+    var text = '「' + (item.text || item.name || '') + '」を共有します\n' + url;
+    if (navigator.share) {
+        navigator.share({ title: '【Logcal】タスク共有', text: text }).catch(function() {});
+    } else {
+        var subject = encodeURIComponent('【Logcal】タスク: ' + (item.text || item.name || ''));
+        var body = encodeURIComponent(text);
+        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    }
+}
+
+function checkImportFromHash() {
+    var hash = location.hash;
+    if (!hash || !hash.startsWith('#import=')) return;
+    var encoded = hash.slice(8);
+    var data = decodeTaskFromUrl(encoded);
+    if (!data) {
+        showToast('無効な共有リンクです');
+        history.replaceState(null, '', location.pathname + location.search);
+        return;
+    }
+    var name = data.text || '(名称なし)';
+    if (confirm('「' + name + '」を追加しますか？')) {
+        addTask(data.text || '', data.due || '', data.urgent || false, data.category || '', data.time || '', [], data.memo || '', data.recurring || '', null, '', null);
+        showToast('タスクを追加しました');
+        if (typeof window._planlyPageRefresh === 'function') {
+            window._planlyPageRefresh();
+        }
+    }
+    history.replaceState(null, '', location.pathname + location.search);
 }
 
 function updateBadgeUI() {

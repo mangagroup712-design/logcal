@@ -132,7 +132,7 @@
             <div class="modal-field"><span class="modal-label">評価</span><div class="star-rating" id="detail-stars"></div></div>
             <div class="modal-field"><span class="modal-label">添付ファイル</span><div id="detail-attachments" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;"></div></div>
         </div>
-        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="task-detail-close" type="button">閉じる</button><button class="btn-save" id="task-detail-edit" type="button">編集</button></div>
+        <div class="modal-actions modal-actions-sticky"><button class="btn-cancel" id="task-detail-close" type="button">閉じる</button><button class="btn-share" id="task-detail-share" type="button">共有</button><button class="btn-save" id="task-detail-edit" type="button">編集</button></div>
     </div>
 </div>
 
@@ -350,7 +350,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var id = Number(button.dataset.id);
                 var task = getTasks().find(function(t) { return t.id === id; });
                 if (!task) return;
-                openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+                if (getConfirmEnabled()) {
+                    openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+                } else {
+                    toggleTask(id); renderAll(); openRatingModal(id);
+                }
             });
         });
         list.querySelectorAll('.event-delete').forEach(function(button) {
@@ -358,7 +362,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const id = Number(button.dataset.id);
                 const task = getTasks().find(function(t) { return t.id === id; });
                 if (!task) return;
-                openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+                if (getConfirmEnabled()) {
+                    openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+                } else {
+                    deleteTask(id); renderAll();
+                }
             });
         });
         list.querySelectorAll('.event-name').forEach(function(span) {
@@ -444,7 +452,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var id = Number(button.dataset.id);
                 var task = getTasks().find(function(t) { return t.id === id; });
                 if (!task) return;
-                openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+                if (getConfirmEnabled()) {
+                    openConfirm('タスクを完了', '「' + task.text + '」を完了しますか？タスク名を入力してください。', task.text, function() { toggleTask(id); renderAll(); openRatingModal(id); });
+                } else {
+                    toggleTask(id); renderAll(); openRatingModal(id);
+                }
             });
         });
         container.querySelectorAll('.task-delete').forEach(function(button) {
@@ -452,7 +464,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var id = Number(button.dataset.id);
                 var task = getTasks().find(function(t) { return t.id === id; });
                 if (!task) return;
-                openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+                if (getConfirmEnabled()) {
+                    openConfirm('タスクを削除', '「' + task.text + '」を削除しますか？タスク名を入力してください。', task.text, function() { deleteTask(id); renderAll(); });
+                } else {
+                    deleteTask(id); renderAll();
+                }
             });
         });
         container.querySelectorAll('.task-text').forEach(function(span) {
@@ -640,6 +656,9 @@ document.addEventListener('DOMContentLoaded', function() {
         renderAll();
     });
     document.getElementById('task-detail-close').addEventListener('click', closeDetailModal);
+    document.getElementById('task-detail-share').addEventListener('click', function() {
+        if (_currentDetailTask) shareTask(_currentDetailTask);
+    });
     document.getElementById('task-detail-edit').addEventListener('click', function() {
         if (_currentDetailTask) {
             closeDetailModal();
@@ -771,6 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window._planlyPageRefresh = renderAll;
     renderAll();
+    checkImportFromHash();
     if (window.location.hash === '#open-task') {
         history.replaceState(null, '', window.location.pathname + window.location.search);
         openModal();

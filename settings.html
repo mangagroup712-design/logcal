@@ -78,6 +78,13 @@
 
         <section class="settings-card">
             <div class="settings-row">
+                <div class="settings-info"><span class="settings-label">完了・削除の確認</span><span class="settings-desc">タスクを完了または削除するときに確認画面を表示します</span></div>
+                <label class="toggle-label"><input type="checkbox" id="confirm-toggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+        </section>
+
+        <section class="settings-card">
+            <div class="settings-row">
                 <div class="settings-info"><span class="settings-label">データのエクスポート</span><span class="settings-desc">すべてのデータをJSONファイルとして保存します</span></div>
                 <button class="settings-btn" id="export-btn" type="button">エクスポート</button>
             </div>
@@ -127,7 +134,7 @@
             </div>
             <h3 class="app-name">Logcal</h3>
             <p class="app-version">v0.3</p>
-            <p class="app-desc">task & schedule</p>
+            <p class="app-desc">app description</p>
         </section>
     </main>
 
@@ -221,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('settings-category-count').textContent = getCategories().length + '件';
         renderNotificationSettings();
         updateBadgeUI();
+        document.getElementById('confirm-toggle').checked = getConfirmEnabled();
     }
 
     function renderNotificationSettings() {
@@ -257,6 +265,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('read-all-btn').addEventListener('click', function() {
         markAllRead();
         renderSettings();
+    });
+
+    document.getElementById('confirm-toggle').addEventListener('change', function() {
+        setConfirmEnabled(this.checked);
+        showToast(this.checked ? '確認画面を有効にしました' : '確認画面を無効にしました');
     });
 
     document.getElementById('clear-data-btn').addEventListener('click', function() {
@@ -448,6 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window._planlyPageRefresh = renderSettings;
     renderSettings();
+    checkImportFromHash();
 });
 </script>
 </body>

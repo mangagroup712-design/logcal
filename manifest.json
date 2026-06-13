@@ -1,7 +1,7 @@
 {
     "name": "Logcal",
     "short_name": "Logcal",
-    "description": "シンプルでかわいいリマインダー＆スケジュールアプリ",
+    "description": "シンプルなのに高機能なタスク管理ウェブアプリ",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#dbefff",

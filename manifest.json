@@ -1,0 +1,21 @@
+{
+    "name": "Logcal",
+    "short_name": "Logcal",
+    "description": "シンプルなのに高機能なタスク管理ウェブアプリ",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#dbefff",
+    "theme_color": "#5B5EF4",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -37,6 +37,7 @@
 
     /* --- 影 --- */
     --shadow-sm: 0 2px 8px rgba(91,94,244,0.06);
+    --fab-shadow: 0 0px 10px 2px rgba(91, 94, 244, 0.45);
 
     /* --- 高さ --- */
     --tab-h: 76px;  /* ← ボトムナビの高さ */
@@ -66,6 +67,10 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+}
+body.modal-open {
+    overflow: hidden;
+    touch-action: none;
 }
 
 
@@ -301,6 +306,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
+    cursor: pointer;
 }
 .event-loc {
     font-size: 12px;
@@ -337,7 +343,7 @@ body {
     padding: 14px 16px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
     transition: box-shadow 0.18s;
     position: relative;
     overflow: hidden;
@@ -386,6 +392,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
+    cursor: pointer;
 }
 .task-text.done {
     color: var(--text-muted);
@@ -397,6 +404,84 @@ body {
 .task-due.done   { color: var(--teal); }
 .task-due.urgent { color: #D85A30; }
 
+/* ============================================================
+   イベント・直近タスク共通削除ボタン
+   ============================================================ */
+.event-delete {
+    flex-shrink: 0;
+    padding: 4px 7px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.event-delete:hover {
+    background: rgba(226, 75, 74, 0.10);
+    color: #e24b4a;
+}
+
+html[data-theme="dark"] .event-delete:hover,
+html[data-theme="moon"] .event-delete:hover {
+    background: rgba(226, 75, 74, 0.18);
+    color: #ff7b7b;
+}
+
+/* ============================================================
+   直近タスクのチェックマーク
+   ============================================================ */
+.near-task-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-md);
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.18s, background 0.18s;
+}
+.near-task-check:hover { border-color: var(--accent); }
+.near-task-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.near-task-check.checked::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -54%) rotate(45deg);
+    width: 4px; height: 7px;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+}
+
+.near-task-item.overdue-fill .near-task-check {
+    border-color: rgba(255,255,255,0.5);
+}
+.near-task-item.overdue-fill .near-task-check:hover {
+    border-color: #fff;
+}
+.near-task-item.overdue-fill .near-task-check.checked {
+    background: #fff;
+    border-color: #fff;
+}
+.near-task-item.overdue-fill .near-task-check.checked::after {
+    border-right-color: #C62828;
+    border-bottom-color: #C62828;
+}
+
+/* カレンダー予定リスト内のタスク完了スタイル */
+.event-item.task-done .event-name.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
 
 /* ============================================================
    ⑪ ボトムナビ（タブバー）
@@ -406,7 +491,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 998;
     background: rgba(255, 255, 255, 0.82);
     border-top: 1px solid var(--border);
     height: var(--tab-h);
@@ -873,13 +958,13 @@ body > #content {
     background: var(--accent);
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 0px 10px 2px rgb(154, 157, 255);
+    box-shadow: var(--fab-shadow);
     transition: all 0.15s ease;
 }
 
 .fab-add-btn:hover {
     transform: scale(1.05) rotate(90deg);
-    box-shadow: 0 0px 24px rgba(0, 4, 255, 0.666);
+    box-shadow: 0 0px 24px 4px rgba(91, 94, 244, 0.55);
     transition: all 0.15s ease;
 }
 
@@ -887,6 +972,22 @@ body > #content {
     transform: scale(0.96) rotate(90deg);
     filter: brightness(0.9);
     transition: all 0.15s ease;
+}
+
+html[data-theme="dark"] .fab-add-btn:hover {
+    box-shadow: 0 0px 24px 4px rgba(139, 143, 255, 0.55);
+}
+
+html[data-theme="warm"] .fab-add-btn:hover {
+    box-shadow: 0 0px 24px 4px rgba(232, 106, 51, 0.55);
+}
+
+html[data-theme="olive"] .fab-add-btn:hover {
+    box-shadow: 0 0px 24px 4px rgba(93, 138, 62, 0.55);
+}
+
+html[data-theme="moon"] .fab-add-btn:hover {
+    box-shadow: 0 0px 24px 4px rgba(255, 193, 7, 0.55);
 }
 
 
@@ -898,7 +999,7 @@ body > #content {
     display: none;
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.35);
-    z-index: 200;
+    z-index: 999;
     align-items: flex-end;
     justify-content: center;
 }
@@ -948,8 +1049,9 @@ body > #content {
 .modal-input:focus { border-color: var(--accent); }
 
 select.modal-input {
-    appearance: none;
     -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     background-color: #fff;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231A1A2E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -963,6 +1065,32 @@ select.modal-input {
 
 .modal-row { display: flex; gap: 10px; }
 .modal-row .modal-field { flex: 1; }
+
+.modal-scrollable {
+    max-height: 85vh;
+    overflow: hidden;
+    padding: 20px 20px 0;
+}
+.modal-body {
+    overflow-y: auto;
+    padding: 0 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.modal-actions-sticky {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    padding: 12px 0 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.star-rating { display:flex; align-items:center; gap:2px; }
+.star-rating span { font-size:20px; cursor:pointer; transition:color 0.15s; }
+.subtask-badge { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:6px; background:var(--surface-2); color:var(--text-secondary); font-size:11px; font-weight:600; margin-left:4px; }
 
 .modal-actions { display: flex; gap: 10px; }
 
@@ -989,6 +1117,18 @@ select.modal-input {
 }
 .btn-save:hover  { opacity: 0.88; }
 .btn-save:active { transform: scale(0.97); }
+
+.btn-share {
+    flex: 1; padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-md);
+    background: var(--surface);
+    font-size: 14px; font-weight: 600;
+    color: var(--accent); cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+.btn-share:hover { background: var(--accent-light); }
+.btn-share:active { transform: scale(0.97); }
 
 
 /* ============================================================
@@ -1503,4 +1643,1330 @@ body.has-content-below #tabs {
 .category-delete:hover {
     opacity: 1;
     color: #E24B4A;
+}
+
+.category-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.category-color-trigger {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: inherit;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.15s, transform 0.15s;
+}
+
+.category-color-trigger:hover {
+    background: rgba(255, 255, 255, 0.32);
+    transform: translateY(-1px);
+}
+
+.app-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 24px 16px;
+    text-align: center;
+}
+
+.app-logo-wrap {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-md);
+    margin-bottom: 4px;
+}
+
+.app-logo {
+    display: block;
+    width: 40px;
+    height: 40px;
+}
+
+.app-logo rect {
+    fill: var(--accent);
+}
+
+.app-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+    margin: 0;
+}
+
+.app-version {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.app-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 260px;
+}
+
+.fab-add-btn.fab-hidden {
+    transform: translateY(120px) scale(0.85);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toast-bar {
+    position: fixed;
+    top: calc(var(--top-h) + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-90px);
+    z-index: 300;
+    background: rgba(30, 30, 40, 0.92);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.toast-bar.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* ============================================================
+   ㉑ ダークモード
+   ============================================================ */
+html[data-theme="dark"] {
+    --accent-light: #2A2A4E;
+    --teal-light: #0F3D2E;
+    --purple-light: #2A2454;
+    --bg: #0F1629;
+    --surface: #1A1F35;
+    --surface-2: #252B45;
+    --text-primary: #E8E8F0;
+    --text-secondary: #A0A5B8;
+    --text-muted: #6A6F85;
+    --calender-accent: #FFFFFF;
+    --border: rgba(255,255,255,0.08);
+    --border-md: rgba(255,255,255,0.14);
+    --fab-shadow: 0 0px 10px 2px rgba(139, 143, 255, 0.45);
+}
+
+html[data-theme="dark"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] #topbar,
+html[data-theme="dark"] #tabs {
+    background: rgba(26, 31, 53, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .brand-name {
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .card-events {
+    background: var(--surface);
+    border-color: var(--border-md);
+}
+
+html[data-theme="dark"] .card-events .card-number {
+    color: var(--accent);
+}
+
+html[data-theme="dark"] .event-item,
+html[data-theme="dark"] .task-item,
+html[data-theme="dark"] .no-events,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .calendar-container,
+html[data-theme="dark"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .event-time {
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .task-due {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .task-due.done {
+    color: var(--teal);
+}
+
+html[data-theme="dark"] .day-cell {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .day-cell.muted {
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.03);
+}
+
+html[data-theme="dark"] .day-cell.today:not(.selected) {
+    background: rgba(91, 94, 244, 0.18);
+}
+
+html[data-theme="dark"] .day-cell.today:not(.selected) .day-number {
+    color: #8B8FFF;
+}
+
+html[data-theme="dark"] .weekday {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .notif-panel,
+html[data-theme="dark"] #account-panel {
+    background: var(--surface);
+    border-color: var(--border-md);
+}
+
+html[data-theme="dark"] .notif-item {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] select.modal-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23E8E8F0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(91, 94, 244, 0.35);
+}
+
+html[data-theme="dark"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .btn-cancel:hover {
+    background: var(--surface-2);
+}
+
+html[data-theme="dark"] .category-block {
+    background: linear-gradient(180deg, rgba(42, 42, 78, 0.78), rgba(26, 31, 53, 0.9));
+}
+
+html[data-theme="dark"] .task-attachment {
+    background: var(--accent-light);
+}
+
+html[data-theme="dark"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .settings-divider {
+    background: var(--border);
+}
+
+html[data-theme="dark"] .btn-google-login {
+    background: var(--surface);
+    border-color: var(--border-md);
+}
+
+html[data-theme="dark"] .btn-logout {
+    background: #3D1F1F;
+}
+
+html[data-theme="dark"] .offset-chip {
+    background: var(--accent-light);
+}
+
+html[data-theme="dark"] .search-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .search-input::placeholder {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .toggle-track {
+    background: var(--border-md);
+}
+
+html[data-theme="dark"] .toggle-label input:checked + .toggle-track {
+    background: var(--accent);
+}
+
+html[data-theme="dark"] .recurring-badge {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+html[data-theme="dark"] .overdue {
+    color: #FF7B7B !important;
+}
+
+html[data-theme="dark"] .overdue .task-text {
+    color: #FF7B7B;
+}
+
+/* ============================================================
+   ㉒ 検索バー
+   ============================================================ */
+.search-bar {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(91, 94, 244, 0.15);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* ============================================================
+   ㉓ 繰り返しバッジ
+   ============================================================ */
+.recurring-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    background: var(--accent-light);
+    color: var(--accent);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.attach-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    vertical-align: middle;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   ㉔ 期限切れスタイル
+   ============================================================ */
+.overdue .task-due {
+    color: #E24B4A !important;
+    font-weight: 700;
+}
+
+.overdue .task-text {
+    color: #D85A30;
+}
+
+/* ============================================================
+   ㉕ エクスポート/インポート
+   ============================================================ */
+.import-file-input {
+    display: none;
+}
+
+.export-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   ㉖ warm テーマ
+   ============================================================ */
+html[data-theme="warm"] {
+    --accent:       #E86A33;
+    --accent-light: #FFF0E8;
+    --home-color:     #E86A33;
+    --calender-color: #D9583C;
+    --setting-color:  #B86AF4;
+    --teal:        #2AA876;
+    --teal-light:  #E8F5EE;
+    --purple:      #B86AF4;
+    --purple-light: #F5E8FF;
+    --bg:        #FFF8F0;
+    --surface:   #FFFFFF;
+    --surface-2: #FFF0E0;
+    --text-primary:   #3D2B1F;
+    --text-secondary: #6B5344;
+    --text-muted:     #A89B8C;
+    --calender-accent: #3D2B1F;
+    --border:    rgba(0,0,0,0.07);
+    --border-md: rgba(0,0,0,0.12);
+    --fab-shadow: 0 0px 10px 2px rgba(232, 106, 51, 0.45);
+}
+
+html[data-theme="warm"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="warm"] #topbar,
+html[data-theme="warm"] #tabs {
+    background: rgba(255, 248, 240, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="warm"] .card-events .card-number {
+    color: var(--accent);
+}
+
+html[data-theme="warm"] .event-item,
+html[data-theme="warm"] .task-item,
+html[data-theme="warm"] .no-events,
+html[data-theme="warm"] .settings-card,
+html[data-theme="warm"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="warm"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="warm"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233D2B1F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(232, 106, 51, 0.35);
+}
+
+html[data-theme="warm"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="warm"] .category-block {
+    background: linear-gradient(180deg, rgba(255, 240, 232, 0.78), rgba(255, 255, 255, 0.9));
+}
+
+html[data-theme="warm"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="warm"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   ㉗ 期限が近いタスクのアクセント
+   ============================================================ */
+@keyframes pulse-bar {
+    0% { opacity: 1; transform: scaleY(1); }
+    50% { opacity: 0.6; transform: scaleY(1.15); }
+    100% { opacity: 1; transform: scaleY(1); }
+}
+
+/* ============================================================
+   直近タスク共通：カテゴリー色左アクセント
+   ============================================================ */
+.near-task-item {
+    position: relative;
+    overflow: hidden;
+}
+.near-task-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--category-color, var(--accent));
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    z-index: 2;
+}
+
+/* ============================================================
+   期限が近いタスク（オレンジアクセント）
+   ============================================================ */
+.near-task-item.due-soon {
+    border-left: 4px solid #E86A33;
+    background: linear-gradient(90deg, rgba(232, 106, 51, 0.10), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(232, 106, 51, 0.25), 0 4px 14px rgba(232, 106, 51, 0.12);
+}
+
+.near-task-item.due-soon .event-name {
+    font-weight: 700;
+}
+
+.near-task-item.due-soon .event-time {
+    color: #E86A33;
+    font-weight: 700;
+}
+
+.near-task-item.due-soon .event-delete {
+    color: var(--text-secondary);
+}
+.near-task-item.due-soon .event-delete:hover {
+    background: rgba(232, 106, 51, 0.12);
+    color: #c44a1a;
+}
+
+/* ============================================================
+   期限が過ぎたタスク（赤塗りつぶし）
+   ============================================================ */
+.near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #C62828, #E53935);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(198, 40, 40, 0.45);
+}
+
+.near-task-item.overdue-fill::before {
+    background: var(--category-color, #fff);
+    width: 5px;
+}
+
+.near-task-item.overdue-fill .event-name,
+.near-task-item.overdue-fill .event-time,
+.near-task-item.overdue-fill .event-loc {
+    color: #fff;
+}
+
+.near-task-item.overdue-fill .event-delete {
+    color: rgba(255,255,255,0.8);
+}
+
+.near-task-item.overdue-fill .event-delete:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.near-task-item.overdue-fill .due-badge {
+    background: rgba(255,255,255,0.9);
+    color: #C62828;
+}
+
+.near-task-item.overdue-fill .recurring-badge {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+}
+
+/* ============================================================
+   Warm / Olive テーマ対応
+   ============================================================ */
+html[data-theme="warm"] .near-task-item.due-soon {
+    border-left-color: #D9583C;
+    background: linear-gradient(90deg, rgba(217, 88, 60, 0.10), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(217, 88, 60, 0.22), 0 4px 14px rgba(217, 88, 60, 0.10);
+}
+html[data-theme="warm"] .near-task-item.due-soon .event-time {
+    color: #D9583C;
+}
+html[data-theme="warm"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(217, 88, 60, 0.12);
+    color: #b5402a;
+}
+html[data-theme="warm"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #B8321A, #E0503A);
+    box-shadow: 0 8px 24px rgba(184, 50, 26, 0.40);
+}
+
+html[data-theme="olive"] .near-task-item.due-soon {
+    border-left-color: #8A5D3E;
+    background: linear-gradient(90deg, rgba(138, 93, 62, 0.10), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(138, 93, 62, 0.22), 0 4px 14px rgba(138, 93, 62, 0.10);
+}
+html[data-theme="olive"] .near-task-item.due-soon .event-time {
+    color: #8A5D3E;
+}
+html[data-theme="olive"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(138, 93, 62, 0.12);
+    color: #6d482e;
+}
+html[data-theme="olive"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #8B3A30, #B85450);
+    box-shadow: 0 8px 24px rgba(139, 58, 48, 0.40);
+}
+
+/* ============================================================
+   ダーク・ムーンでもっと目立つ
+   ============================================================ */
+html[data-theme="dark"] .near-task-item.due-soon,
+html[data-theme="moon"] .near-task-item.due-soon {
+    border: 2px solid #FF8F00;
+    background: linear-gradient(90deg, rgba(255, 143, 0, 0.18), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(255, 143, 0, 0.35), 0 6px 18px rgba(255, 143, 0, 0.22);
+}
+
+html[data-theme="dark"] .near-task-item.due-soon .event-time,
+html[data-theme="moon"] .near-task-item.due-soon .event-time {
+    color: #FFB300;
+}
+
+html[data-theme="dark"] .near-task-item.due-soon .event-name,
+html[data-theme="moon"] .near-task-item.due-soon .event-name {
+    color: #FFE082;
+}
+
+html[data-theme="dark"] .near-task-item.due-soon .event-delete:hover,
+html[data-theme="moon"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(255, 143, 0, 0.18);
+    color: #ffcc80;
+}
+
+html[data-theme="dark"] .near-task-item.overdue-fill,
+html[data-theme="moon"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #B71C1C, #D32F2F);
+    box-shadow: 0 0 0 2px rgba(255, 50, 50, 0.4), 0 10px 28px rgba(183, 28, 28, 0.55);
+}
+
+html[data-theme="dark"] .due-badge,
+html[data-theme="moon"] .due-badge {
+    background: rgba(255, 143, 0, 0.25);
+    color: #FFD54F;
+    border: 1px solid rgba(255, 179, 0, 0.35);
+}
+
+.due-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    background: #FFF0E0;
+    color: #E86A33;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   ㉘ テーマ選択ボタン
+   ============================================================ */
+.theme-btn {
+    transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.theme-btn.active {
+    box-shadow: 0 0 0 2px var(--accent);
+    transform: scale(1.05);
+}
+
+/* ============================================================
+   ㉛ テーマ選択ポップアップ
+   ============================================================ */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.theme-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.theme-preview:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.theme-preview:active {
+    transform: scale(0.97);
+}
+
+.theme-swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.theme-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.theme-section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: 16px 0 8px 0;
+    padding-left: 4px;
+    border-left: 3px solid var(--accent);
+}
+
+/* ============================================================
+   ㉙ オリーブテーマ
+   ============================================================ */
+html[data-theme="olive"] {
+    --accent:       #5D8A3E;
+    --accent-light: #EDF5E8;
+    --home-color:     #5D8A3E;
+    --calender-color: #8A5D3E;
+    --setting-color:  #3E5D8A;
+    --teal:        #3E8A7A;
+    --teal-light:  #E8F5F0;
+    --purple:      #7A3E8A;
+    --purple-light: #F0E8F5;
+    --bg:        #F5F8F2;
+    --surface:   #FFFFFF;
+    --surface-2: #EDF0EA;
+    --text-primary:   #2A3324;
+    --text-secondary: #4A5A3E;
+    --text-muted:     #8A9A7A;
+    --calender-accent: #2A3324;
+    --border:    rgba(0,0,0,0.07);
+    --border-md: rgba(0,0,0,0.12);
+    --fab-shadow: 0 0px 10px 2px rgba(93, 138, 62, 0.45);
+}
+
+html[data-theme="olive"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="olive"] #topbar,
+html[data-theme="olive"] #tabs {
+    background: rgba(245, 248, 242, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="olive"] .event-item,
+html[data-theme="olive"] .task-item,
+html[data-theme="olive"] .no-events,
+html[data-theme="olive"] .settings-card,
+html[data-theme="olive"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="olive"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="olive"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232A3324' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(93, 138, 62, 0.35);
+}
+
+html[data-theme="olive"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="olive"] .category-block {
+    background: linear-gradient(180deg, rgba(237, 245, 232, 0.78), rgba(255, 255, 255, 0.9));
+}
+
+html[data-theme="olive"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="olive"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   ㉚ ムーンテーマ
+   ============================================================ */
+html[data-theme="moon"] {
+    --accent:       #FFC107;
+    --accent-light: #3A3000;
+    --home-color:     #FFC107;
+    --calender-color: #FF9800;
+    --setting-color:  #FFD54F;
+    --teal:        #4CAF50;
+    --teal-light:  #1B3018;
+    --purple:      #AB47BC;
+    --purple-light: #301838;
+    --bg:        #0f0c05;
+    --surface:   #201b0c;
+    --surface-2: #3A3218;
+    --text-primary:   #F0E8D0;
+    --text-secondary: #B0A880;
+    --text-muted:     #807459;
+    --calender-accent: #FFFFFF;
+    --border:    rgba(255,255,255,0.08);
+    --border-md: rgba(255,255,255,0.14);
+}
+
+html[data-theme="moon"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="moon"] #topbar,
+html[data-theme="moon"] #tabs {
+    background: rgba(42, 35, 16, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="moon"] .event-item,
+html[data-theme="moon"] .task-item,
+html[data-theme="moon"] .no-events,
+html[data-theme="moon"] .settings-card,
+html[data-theme="moon"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="moon"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="moon"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23F0E8D0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(255, 193, 7, 0.35);
+}
+
+html[data-theme="moon"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="moon"] .category-block {
+    background: linear-gradient(180deg, rgba(58, 50, 24, 0.78), rgba(42, 35, 16, 0.9));
+}
+
+html[data-theme="moon"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="moon"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   ㉛ ネオン テーマ（紫ベース・ダーク）
+   ============================================================ */
+html[data-theme="neon"] {
+    --accent:       #B967FF;
+    --accent-light: #2A1A4E;
+    --home-color:     #B967FF;
+    --calender-color: #FF6B6B;
+    --setting-color:  #4ECDC4;
+    --teal:        #4ECDC4;
+    --teal-light:  #1A3A3A;
+    --purple:      #FF6B6B;
+    --purple-light: #3E1A1A;
+    --bg:        #0D0221;
+    --surface:   #1A0B2E;
+    --surface-2: #2A1B3E;
+    --text-primary:   #F0E6FF;
+    --text-secondary: #A08EC0;
+    --text-muted:     #9982c7;
+    --calender-accent: #FFFFFF;
+    --border:    rgba(255,255,255,0.08);
+    --border-md: rgba(255,255,255,0.14);
+    --fab-shadow: 0 0px 10px 2px rgba(185, 103, 255, 0.45);
+}
+
+html[data-theme="neon"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="neon"] #topbar,
+html[data-theme="neon"] #tabs {
+    background: rgba(13, 2, 33, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="neon"] .event-item,
+html[data-theme="neon"] .task-item,
+html[data-theme="neon"] .no-events,
+html[data-theme="neon"] .settings-card,
+html[data-theme="neon"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="neon"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="neon"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23F0E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(185, 103, 255, 0.35);
+}
+
+html[data-theme="neon"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="neon"] .category-block {
+    background: linear-gradient(180deg, rgba(42, 27, 62, 0.78), rgba(26, 11, 46, 0.9));
+}
+
+html[data-theme="neon"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="neon"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="neon"] .card-events .card-number {
+    color: var(--accent);
+}
+
+html[data-theme="neon"] .near-task-item {
+    color: #fff;
+}
+
+html[data-theme="neon"] .near-task-item.due-soon {
+    border: 2px solid #FF6B6B;
+    background: linear-gradient(90deg, rgba(255, 107, 107, 0.18), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.35), 0 6px 18px rgba(255, 107, 107, 0.22);
+}
+
+html[data-theme="neon"] .near-task-item.due-soon .event-time {
+    color: #FF9E9E;
+}
+
+html[data-theme="neon"] .near-task-item.due-soon .event-name {
+    color: #FFE0E0;
+}
+
+html[data-theme="neon"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(255, 107, 107, 0.18);
+    color: #ffcccc;
+}
+
+html[data-theme="neon"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #B71C1C, #D32F2F);
+    box-shadow: 0 0 0 2px rgba(255, 50, 50, 0.4), 0 10px 28px rgba(183, 28, 28, 0.55);
+}
+
+html[data-theme="neon"] .due-badge {
+    background: rgba(255, 107, 107, 0.25);
+    color: #FFD54F;
+    border: 1px solid rgba(255, 107, 107, 0.35);
+}
+
+/* ============================================================
+   ㉜ 桜 テーマ（薄ピンク・ライト）
+   ============================================================ */
+html[data-theme="sakura"] {
+    --accent:       #FF85A2;
+    --accent-light: #FFF0F3;
+    --home-color:     #FF85A2;
+    --calender-color: #FF6B8A;
+    --setting-color:  #C084FC;
+    --teal:        #4ECDC4;
+    --teal-light:  #E8F7F5;
+    --purple:      #C084FC;
+    --purple-light: #F5E8FF;
+    --bg:        #FFF5F7;
+    --surface:   #FFFFFF;
+    --surface-2: #FFE8EC;
+    --text-primary:   #2D1F23;
+    --text-secondary: #7A5A62;
+    --text-muted:     #B8A0A5;
+    --calender-accent: #2D1F23;
+    --border:    rgba(0,0,0,0.07);
+    --border-md: rgba(0,0,0,0.12);
+    --fab-shadow: 0 0px 10px 2px rgba(255, 133, 162, 0.45);
+}
+
+html[data-theme="sakura"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="sakura"] #topbar,
+html[data-theme="sakura"] #tabs {
+    background: rgba(255, 245, 247, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="sakura"] .card-events .card-number {
+    color: var(--accent);
+}
+
+html[data-theme="sakura"] .event-item,
+html[data-theme="sakura"] .task-item,
+html[data-theme="sakura"] .no-events,
+html[data-theme="sakura"] .settings-card,
+html[data-theme="sakura"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="sakura"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="sakura"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232D1F23' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(255, 133, 162, 0.35);
+}
+
+html[data-theme="sakura"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="sakura"] .category-block {
+    background: linear-gradient(180deg, rgba(255, 232, 236, 0.78), rgba(255, 255, 255, 0.9));
+}
+
+html[data-theme="sakura"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="sakura"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="sakura"] .near-task-item.due-soon {
+    border-left-color: #FF6B8A;
+    background: linear-gradient(90deg, rgba(255, 107, 138, 0.10), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(255, 107, 138, 0.22), 0 4px 14px rgba(255, 107, 138, 0.10);
+}
+
+html[data-theme="sakura"] .near-task-item.due-soon .event-time {
+    color: #FF6B8A;
+}
+
+html[data-theme="sakura"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(255, 107, 138, 0.12);
+    color: #d94a6a;
+}
+
+html[data-theme="sakura"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #B8321A, #E0503A);
+    box-shadow: 0 8px 24px rgba(184, 50, 26, 0.40);
+}
+
+/* ============================================================
+   ㉝ ナイトスカイ テーマ（水色基調・ダーク）
+   ============================================================ */
+html[data-theme="nightsky"] {
+    --accent:       #4DABF7;
+    --accent-light: #1A2E4E;
+    --home-color:     #4DABF7;
+    --calender-color: #38D9A9;
+    --setting-color:  #74C0FC;
+    --teal:        #38D9A9;
+    --teal-light:  #1A3A30;
+    --purple:      #DA77F2;
+    --purple-light: #3A1A4E;
+    --bg:        #0B1220;
+    --surface:   #111D2E;
+    --surface-2: #1B2A3E;
+    --text-primary:   #E7F5FF;
+    --text-secondary: #8AB4E0;
+    --text-muted:     #5A7A9A;
+    --calender-accent: #FFFFFF;
+    --border:    rgba(255,255,255,0.08);
+    --border-md: rgba(255,255,255,0.14);
+    --fab-shadow: 0 0px 10px 2px rgba(77, 171, 247, 0.45);
+}
+
+html[data-theme="nightsky"] body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+html[data-theme="nightsky"] #topbar,
+html[data-theme="nightsky"] #tabs {
+    background: rgba(11, 18, 32, 0.88);
+    border-color: var(--border);
+}
+
+html[data-theme="nightsky"] .event-item,
+html[data-theme="nightsky"] .task-item,
+html[data-theme="nightsky"] .no-events,
+html[data-theme="nightsky"] .settings-card,
+html[data-theme="nightsky"] .modal {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="nightsky"] .modal-input {
+    background: var(--surface-2);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="nightsky"] select.modal-input {
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23E7F5FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    border-color: rgba(77, 171, 247, 0.35);
+}
+
+html[data-theme="nightsky"] .btn-cancel {
+    border-color: var(--border-md);
+    color: var(--text-secondary);
+}
+
+html[data-theme="nightsky"] .category-block {
+    background: linear-gradient(180deg, rgba(27, 42, 62, 0.78), rgba(17, 29, 46, 0.9));
+}
+
+html[data-theme="nightsky"] .attachment-preview-item {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+html[data-theme="nightsky"] .search-input {
+    background: var(--surface);
+    border-color: var(--border-md);
+    color: var(--text-primary);
+}
+
+html[data-theme="nightsky"] .card-events .card-number {
+    color: var(--accent);
+}
+
+html[data-theme="nightsky"] .near-task-item {
+    color: #fff;
+}
+
+html[data-theme="nightsky"] .near-task-item.due-soon {
+    border: 2px solid #FFD43B;
+    background: linear-gradient(90deg, rgba(255, 212, 59, 0.18), transparent 60%);
+    box-shadow: 0 0 0 1px rgba(255, 212, 59, 0.35), 0 6px 18px rgba(255, 212, 59, 0.22);
+}
+
+html[data-theme="nightsky"] .near-task-item.due-soon .event-time {
+    color: #FFE066;
+}
+
+html[data-theme="nightsky"] .near-task-item.due-soon .event-name {
+    color: #FFF9DB;
+}
+
+html[data-theme="nightsky"] .near-task-item.due-soon .event-delete:hover {
+    background: rgba(255, 212, 59, 0.18);
+    color: #fff3cd;
+}
+
+html[data-theme="nightsky"] .near-task-item.overdue-fill {
+    background: linear-gradient(135deg, #B71C1C, #D32F2F);
+    box-shadow: 0 0 0 2px rgba(255, 50, 50, 0.4), 0 10px 28px rgba(183, 28, 28, 0.55);
+}
+
+html[data-theme="nightsky"] .due-badge {
+    background: rgba(255, 212, 59, 0.25);
+    color: #FFF9DB;
+    border: 1px solid rgba(255, 212, 59, 0.35);
+}
+
+/* ============================================================
+   ムーンテーマ 黒文字補正
+   ============================================================ */
+html[data-theme="moon"].summary-card,
+html[data-theme="moon"] .btn-save,
+html[data-theme="moon"] .add-btn,
+html[data-theme="moon"] .file-upload-btn,
+html[data-theme="moon"] .fab-add-btn {
+    color: #1A1508;
+}
+
+html[data-theme="moon"] .day-cell.today,
+html[data-theme="moon"] .day-cell.today.selected {
+    color: #1A1508;
+}
+
+html[data-theme="moon"] .task-check.checked::after,
+html[data-theme="moon"] .near-task-check.checked::after {
+    border-right-color: #1A1508;
+    border-bottom-color: #1A1508;
+}
+
+/* ============================================================
+   確認モーダル
+   ============================================================ */
+#confirm-modal .modal {
+    max-width: 400px;
+}
+
+#confirm-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-md);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+#confirm-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+#confirm-ok:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+html[data-theme="dark"] #confirm-input,
+html[data-theme="moon"] #confirm-input {
+    background: var(--surface-2);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   Firefox / Safari フォールバック
+   backdrop-filter が使えない場合は背景を濃くする
+   ============================================================ */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    #topbar,
+    #tabs {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    .toast-bar {
+        background: rgba(30, 30, 40, 0.95);
+    }
+    .modal-overlay.open {
+        background: rgba(0, 0, 0, 0.45);
+    }
+    html[data-theme="dark"] #topbar,
+    html[data-theme="dark"] #tabs {
+        background: rgba(26, 31, 53, 0.95);
+    }
+    html[data-theme="moon"] #topbar,
+    html[data-theme="moon"] #tabs {
+        background: rgba(42, 35, 16, 0.95);
+    }
+    html[data-theme="neon"] #topbar,
+    html[data-theme="neon"] #tabs {
+        background: rgba(26, 11, 46, 0.95);
+    }
+    html[data-theme="nightsky"] #topbar,
+    html[data-theme="nightsky"] #tabs {
+        background: rgba(17, 29, 46, 0.95);
+    }
 }

@@ -7,7 +7,9 @@ const PLANLY_KEYS = {
     notifs: 'planly_notifs',
     notificationOffsets: 'planly_notification_offsets',
     firedNotifications: 'planly_fired_notifications',
-    fcmToken: 'planly_fcm_token'
+    fcmToken: 'planly_fcm_token',
+    theme: 'logcal_theme',
+    confirmEnabled: 'planly_confirm_enabled'
 };
 
 const DEFAULT_CATEGORIES = ['仕事', 'プライベート', '急ぎ', 'その他'];
@@ -102,16 +104,29 @@ function getTasks() {
     return Array.isArray(tasks) ? tasks.map(task => ({
         id: task.id,
         text: task.text || '',
-        due: task.due || '',
+        due: normalizeDateString(task.due) || '',
         time: task.time || '',
         urgent: Boolean(task.urgent),
         done: Boolean(task.done),
         category: task.category || 'その他',
+        memo: task.memo || '',
+        description: task.description || '',
+        recurring: task.recurring || '',
+        rating: Number.isFinite(task.rating) && task.rating >= 0 && task.rating <= 5 ? task.rating : 0,
+        notifOffsets: Array.isArray(task.notifOffsets) ? task.notifOffsets
+            .map(v => Number(v))
+            .filter(v => Number.isFinite(v) && v >= 0 && v <= 10080)
+            .sort((a, b) => b - a) : null,
         attachments: Array.isArray(task.attachments) ? task.attachments.map(file => ({
             name: file.name || '添付ファイル',
             type: file.type || '',
             dataUrl: file.dataUrl || ''
-        })).filter(file => file.dataUrl) : []
+        })).filter(file => file.dataUrl) : [],
+        subtasks: Array.isArray(task.subtasks) ? task.subtasks.map(sub => ({
+            id: sub.id || Date.now() + Math.random(),
+            text: String(sub.text || ''),
+            done: Boolean(sub.done)
+        })) : []
     })) : [];
 }
 
@@ -121,30 +136,95 @@ function saveTasks(tasks) {
     restartTaskReminderScheduler();
 }
 
-function addTask(text, due, urgent, category, time, attachments) {
+function addTask(text, due, urgent, category, time, attachments, memo, recurring, notifOffsets, description, subtasks) {
+    if (typeof window !== 'undefined') window._logcalLastAttachmentSaveFailed = false;
     const tasks = getTasks();
-    tasks.push({
+    const cleanOffsets = Array.isArray(notifOffsets) ? [...new Set(notifOffsets
+        .map(v => Number(v))
+        .filter(v => Number.isFinite(v) && v >= 0 && v <= 10080))]
+        .sort((a, b) => b - a) : null;
+    const cleanSubtasks = Array.isArray(subtasks) ? subtasks.map((sub, idx) => ({
+        id: sub.id || Date.now() + idx + Math.random(),
+        text: String(sub.text || ''),
+        done: Boolean(sub.done)
+    })) : [];
+    const task = {
         id: Date.now(),
         text: text,
-        due: due || '',
+        due: normalizeDateString(due) || '',
         time: time || '',
         urgent: Boolean(urgent),
         done: false,
         category: category || 'その他',
-        attachments: Array.isArray(attachments) ? attachments : []
-    });
-    saveTasks(tasks);
+        memo: memo || '',
+        description: description || '',
+        recurring: recurring || '',
+        rating: 0,
+        notifOffsets: cleanOffsets && cleanOffsets.length ? cleanOffsets : null,
+        attachments: Array.isArray(attachments) ? attachments : [],
+        subtasks: cleanSubtasks
+    };
+    tasks.push(task);
+    try {
+        saveTasks(tasks);
+    } catch (error) {
+        if (!task.attachments.length) throw error;
+        console.warn('Attachments were too large to store. Task was saved without attachments.', error);
+        if (typeof window !== 'undefined') window._logcalLastAttachmentSaveFailed = true;
+        task.attachments = [];
+        saveTasks(tasks);
+    }
     return tasks;
 }
 
 function toggleTask(id) {
     const tasks = getTasks();
     const task = tasks.find(item => item.id === id);
-    if (task) {
-        task.done = !task.done;
+    if (!task) return tasks;
+    task.done = !task.done;
+    if (task.subtasks && task.subtasks.length) {
+        task.subtasks.forEach(sub => { sub.done = task.done; });
+    }
+    if (task.done && task.recurring && task.due) {
+        const nextDue = getNextRecurringDate(task.due, task.recurring);
+        if (nextDue) {
+            tasks.push({
+                id: Date.now() + Math.random(),
+                text: task.text,
+                due: nextDue,
+                time: task.time,
+                urgent: task.urgent,
+                done: false,
+                category: task.category,
+                memo: task.memo,
+                description: task.description || '',
+                recurring: task.recurring,
+                rating: 0,
+                attachments: [],
+                subtasks: task.subtasks ? task.subtasks.map(s => ({...s, done: false})) : []
+            });
+        }
     }
     saveTasks(tasks);
+    if (task.done && typeof window !== 'undefined' && typeof window._onTaskComplete === 'function') {
+        window._onTaskComplete(task);
+    }
     return tasks;
+}
+
+function getNextRecurringDate(dateString, recurring) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return null;
+    const date = new Date(dateString + 'T00:00:00');
+    if (recurring === 'daily') {
+        date.setDate(date.getDate() + 1);
+    } else if (recurring === 'weekly') {
+        date.setDate(date.getDate() + 7);
+    } else if (recurring === 'monthly') {
+        date.setMonth(date.getMonth() + 1);
+    } else {
+        return null;
+    }
+    return formatDate(date);
 }
 
 function deleteTask(id) {
@@ -153,19 +233,78 @@ function deleteTask(id) {
     return tasks;
 }
 
+function updateTask(id, updates) {
+    const tasks = getTasks();
+    const idx = tasks.findIndex(task => task.id === id);
+    if (idx === -1) return tasks;
+    var cleanOffsets = null;
+    if (updates.notifOffsets !== undefined) {
+        if (Array.isArray(updates.notifOffsets)) {
+            cleanOffsets = [...new Set(updates.notifOffsets
+                .map(v => Number(v))
+                .filter(v => Number.isFinite(v) && v >= 0 && v <= 10080))]
+                .sort((a, b) => b - a);
+        }
+    }
+    var cleanSubtasks = tasks[idx].subtasks;
+    if (updates.subtasks !== undefined) {
+        cleanSubtasks = Array.isArray(updates.subtasks) ? updates.subtasks.map((sub, i) => ({
+            id: sub.id || Date.now() + i + Math.random(),
+            text: String(sub.text || ''),
+            done: Boolean(sub.done)
+        })) : [];
+    }
+    var newDone = updates.done !== undefined ? Boolean(updates.done) : tasks[idx].done;
+    if (newDone && cleanSubtasks.length) {
+        cleanSubtasks.forEach(sub => { sub.done = true; });
+    }
+    tasks[idx] = {
+        ...tasks[idx],
+        text: updates.text !== undefined ? String(updates.text || '') : tasks[idx].text,
+        due: updates.due !== undefined ? normalizeDateString(updates.due) || '' : tasks[idx].due,
+        time: updates.time !== undefined ? String(updates.time || '') : tasks[idx].time,
+        urgent: updates.urgent !== undefined ? Boolean(updates.urgent) : tasks[idx].urgent,
+        done: newDone,
+        category: updates.category !== undefined ? String(updates.category || 'その他') : tasks[idx].category,
+        memo: updates.memo !== undefined ? String(updates.memo || '') : tasks[idx].memo,
+        description: updates.description !== undefined ? String(updates.description || '') : (tasks[idx].description || ''),
+        recurring: updates.recurring !== undefined ? String(updates.recurring || '') : tasks[idx].recurring,
+        rating: updates.rating !== undefined ? (Number.isFinite(updates.rating) && updates.rating >= 0 && updates.rating <= 5 ? updates.rating : 0) : tasks[idx].rating,
+        notifOffsets: updates.notifOffsets !== undefined ? (cleanOffsets && cleanOffsets.length ? cleanOffsets : null) : tasks[idx].notifOffsets,
+        attachments: updates.attachments !== undefined ? (Array.isArray(updates.attachments) ? updates.attachments : tasks[idx].attachments) : tasks[idx].attachments,
+        subtasks: cleanSubtasks
+    };
+    saveTasks(tasks);
+    return tasks;
+}
+
+function normalizeDateString(dateStr) {
+    if (!dateStr) return '';
+    var s = String(dateStr).trim();
+    var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+    return s;
+}
+
 function getEvents(date) {
-    const events = readJson(PLANLY_KEYS.events, DEFAULT_EVENTS);
+    var events = readJson(PLANLY_KEYS.events, DEFAULT_EVENTS);
     if (!Array.isArray(events)) return [];
-    const normalized = events.map(event => ({
-        id: event.id,
-        date: event.date || todayString(),
-        time: event.time || '09:00',
-        name: event.name || '',
-        loc: event.loc || '',
-        tag: event.tag || 'blue',
-        tagName: event.tagName || TAG_NAMES[event.tag] || '予定'
-    }));
-    return date ? normalized.filter(event => event.date === date) : normalized;
+    var normalized = events.map(function(event) {
+        if (!event || typeof event !== 'object') return null;
+        var tag = String(event.tag || '').trim() || 'blue';
+        var normalizedDate = normalizeDateString(event.date);
+        return {
+            id: Number(event.id) || Date.now(),
+            date: normalizedDate || todayString(),
+            time: String(event.time || '').trim() || '09:00',
+            name: String(event.name || '').trim(),
+            loc: String(event.loc || '').trim(),
+            tag: tag,
+            tagName: String(event.tagName || '').trim() || TAG_NAMES[tag] || tag || '予定',
+            recurring: String(event.recurring || '').trim()
+        };
+    }).filter(function(e) { return e !== null; });
+    return date ? normalized.filter(function(event) { return event.date === date; }) : normalized;
 }
 
 function saveAllEvents(events) {
@@ -173,18 +312,38 @@ function saveAllEvents(events) {
     notifyOtherPages('events');
 }
 
-function addEvent(date, time, name, loc, tag) {
+function addEvent(date, time, name, loc, tag, recurring) {
     const events = getEvents();
-    const tagValue = tag || 'blue';
-    events.push({
+    const tagValue = String(tag || '').trim() || 'blue';
+    const tagLabel = TAG_NAMES[tagValue] || tagValue || '予定';
+    const base = {
         id: Date.now(),
         date: date || todayString(),
         time: time || '09:00',
         name: name,
         loc: loc || '',
         tag: tagValue,
-        tagName: TAG_NAMES[tagValue] || '予定'
-    });
+        tagName: tagLabel,
+        recurring: recurring || ''
+    };
+    events.push(base);
+    if (recurring && date) {
+        for (let i = 1; i < 12; i++) {
+            const nextDate = getNextRecurringDate(date, recurring);
+            if (!nextDate) break;
+            date = nextDate;
+            events.push({
+                id: base.id + i,
+                date: date,
+                time: base.time,
+                name: base.name,
+                loc: base.loc,
+                tag: base.tag,
+                tagName: base.tagName,
+                recurring: base.recurring
+            });
+        }
+    }
     events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     saveAllEvents(events);
     return events;
@@ -238,6 +397,16 @@ function getNotificationOffsets() {
     return [...new Set(clean)].sort((a, b) => b - a);
 }
 
+function getConfirmEnabled() {
+    var saved = localStorage.getItem(PLANLY_KEYS.confirmEnabled);
+    return saved === null ? true : saved === 'true';
+}
+
+function setConfirmEnabled(enabled) {
+    localStorage.setItem(PLANLY_KEYS.confirmEnabled, String(Boolean(enabled)));
+    notifyOtherPages('confirmEnabled');
+}
+
 function saveNotificationOffsets(offsets) {
     const clean = [...new Set(offsets
         .map(value => Number(value))
@@ -281,13 +450,14 @@ function combineDateTime(date, time) {
 
 function getTaskNotificationPlans(now = new Date()) {
     const nowMs = now.getTime();
-    const offsets = getNotificationOffsets();
+    const globalOffsets = getNotificationOffsets();
     const fired = getFiredNotifications();
     return getTasks()
         .filter(task => !task.done)
         .flatMap(task => {
             const dueAt = combineDateTime(task.due, task.time);
             if (!dueAt) return [];
+            var offsets = (Array.isArray(task.notifOffsets) && task.notifOffsets.length) ? task.notifOffsets : globalOffsets;
             return offsets.map(offset => {
                 const notifyAt = new Date(dueAt.getTime() - offset * 60 * 1000);
                 const key = task.id + ':' + task.due + ':' + task.time + ':' + offset;
@@ -411,6 +581,62 @@ function formatDue(due) {
     return due;
 }
 
+function isOverdue(due, time) {
+    if (!due) return false;
+    const now = new Date();
+    const dueAt = combineDateTime(due, time || '23:59');
+    if (!dueAt) return false;
+    return dueAt.getTime() < now.getTime();
+}
+
+function getDueUrgency(due) {
+    if (!due) return '';
+    if (due === todayString()) return 'today';
+    if (due === tomorrowString()) return 'tomorrow';
+    return '';
+}
+
+function exportLogcalData() {
+    const data = {};
+    Object.values(PLANLY_KEYS).forEach(function(key) {
+        const value = localStorage.getItem(key);
+        if (value !== null) data[key] = value;
+    });
+    return JSON.stringify(data, null, 2);
+}
+
+function importLogcalData(jsonString) {
+    const data = JSON.parse(jsonString);
+    Object.entries(data).forEach(function([key, value]) {
+        localStorage.setItem(key, value);
+    });
+    notifyOtherPages('tasks');
+    notifyOtherPages('events');
+    notifyOtherPages('categories');
+    notifyOtherPages('categoryColors');
+    notifyOtherPages('notifs');
+    notifyOtherPages('notificationOffsets');
+}
+
+function setTheme(themeName) {
+    const theme = themeName || 'light';
+    if (theme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+    localStorage.setItem(PLANLY_KEYS.theme, theme);
+    updateFaviconForTheme();
+}
+
+function updateFaviconForTheme() {
+    var favicon = document.getElementById('favicon');
+    if (!favicon) return;
+    var theme = localStorage.getItem(PLANLY_KEYS.theme) || 'light';
+    var darkThemes = { dark: 1, moon: 1, neon: 1, nightsky: 1 };
+    favicon.href = darkThemes[theme] ? 'logcal-logo-dark.ico' : 'logcal-logo-white.ico';
+}
+
 function escHtml(value) {
     return String(value)
         .replace(/&/g, '&amp;')
@@ -418,6 +644,90 @@ function escHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function encodeTaskForUrl(item) {
+    var isTask = item.text !== undefined;
+    var payload = {
+        type: isTask ? 'task' : 'event',
+        text: isTask ? (item.text || '') : (item.name || ''),
+        due: isTask ? (item.due || '') : (item.date || ''),
+        time: item.time || '',
+        urgent: isTask ? Boolean(item.urgent) : false,
+        category: isTask ? (item.category || '') : (item.tagName || item.tag || ''),
+        memo: isTask ? (item.memo || '') : '',
+        recurring: item.recurring || ''
+    };
+    try {
+        var json = JSON.stringify(payload);
+        var bytes = new TextEncoder().encode(json);
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    } catch (e) {
+        console.error('Encode failed', e);
+        return null;
+    }
+}
+
+function decodeTaskFromUrl(encoded) {
+    try {
+        var binary = atob(encoded);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        var json = new TextDecoder().decode(bytes);
+        return JSON.parse(json);
+    } catch (e) {
+        console.error('Decode failed', e);
+        return null;
+    }
+}
+
+function createTaskShareUrl(item) {
+    var encoded = encodeTaskForUrl(item);
+    if (!encoded) return null;
+    var base = (location.origin && location.origin !== 'null' && location.origin !== 'file://')
+        ? location.origin + location.pathname
+        : location.href.split('#')[0];
+    return base + '#import=' + encoded;
+}
+
+function shareTask(item) {
+    var url = createTaskShareUrl(item);
+    if (!url) { showToast('共有URLの生成に失敗しました'); return; }
+    var text = '「' + (item.text || item.name || '') + '」を共有します\n' + url;
+    if (navigator.share) {
+        navigator.share({ title: '【Logcal】タスク共有', text: text }).catch(function() {});
+    } else {
+        var subject = encodeURIComponent('【Logcal】タスク: ' + (item.text || item.name || ''));
+        var body = encodeURIComponent(text);
+        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    }
+}
+
+function checkImportFromHash() {
+    var hash = location.hash;
+    if (!hash || !hash.startsWith('#import=')) return;
+    var encoded = hash.slice(8);
+    var data = decodeTaskFromUrl(encoded);
+    if (!data) {
+        showToast('無効な共有リンクです');
+        history.replaceState(null, '', location.pathname + location.search);
+        return;
+    }
+    var name = data.text || '(名称なし)';
+    if (confirm('「' + name + '」を追加しますか？')) {
+        addTask(data.text || '', data.due || '', data.urgent || false, data.category || '', data.time || '', [], data.memo || '', data.recurring || '', null, '', null);
+        showToast('タスクを追加しました');
+        if (typeof window._planlyPageRefresh === 'function') {
+            window._planlyPageRefresh();
+        }
+    }
+    history.replaceState(null, '', location.pathname + location.search);
 }
 
 function updateBadgeUI() {

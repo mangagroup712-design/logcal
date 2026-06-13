@@ -8,4 +8,5 @@
 追加されたタスクが一覧で表示され、管理できます。期限が近いものは上に表示され、オレンジ色でハイライトされます。特に近いものあるいは過ぎてしまったものは赤色でハイライトされます。その下には今まで追加してきたタスクがカテゴリーごとに分類されて表示されます。
 タスクの内容が表示されているコンテナをクリックまたはタップすると詳細がご覧いただけます。
 ### スクリーンショット
-!https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567
+<img width="403" height="909" alt="Image" src="https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567" />
+<img width="406" height="906" alt="Image" src="https://github.com/user-attachments/assets/bc741380-63dc-4a6c-887c-a55a4fbaee7a" />

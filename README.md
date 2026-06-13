@@ -12,10 +12,8 @@
 タスクの内容が表示されているコンテナをクリックまたはタップすると詳細がご覧いただけます。また、そこでタスクの編集とURL経由での共有が行えます。
 
 スクリーンショット：
-<img width="403" height="909" alt="ホーム画面" src="https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567" />
-<img width="406" height="906" alt="追加／編集" src="https://github.com/user-attachments/assets/bc741380-63dc-4a6c-887c-a55a4fbaee7a" />
-<img width="404" height="908" alt="詳細" src="https://github.com/user-attachments/assets/7e2b02ea-f71c-40d8-a122-507527fe54c5" />
-<img width="405" height="911" alt="カテゴリー管理" src="https://github.com/user-attachments/assets/42bb28cd-f3d7-459c-8848-d7c1e2099c34" />
+
+<img width="403" height="909" alt="ホーム画面" src="https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567" /><img width="406" height="906" alt="追加／編集" src="https://github.com/user-attachments/assets/bc741380-63dc-4a6c-887c-a55a4fbaee7a" /><img width="404" height="908" alt="詳細" src="https://github.com/user-attachments/assets/7e2b02ea-f71c-40d8-a122-507527fe54c5" /><img width="405" height="911" alt="カテゴリー管理" src="https://github.com/user-attachments/assets/42bb28cd-f3d7-459c-8848-d7c1e2099c34" />
 
 ### カレンダー
 ホームで追加・管理しているタスクをカレンダーで日ごとに分かりやすく表示します。

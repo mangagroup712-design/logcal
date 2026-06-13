@@ -19,6 +19,7 @@
 ホームで追加・管理しているタスクをカレンダーで日ごとに分かりやすく表示します。
 
 スクリーンショット：
+
 <img width="405" height="913" alt="Image" src="https://github.com/user-attachments/assets/ecdb6584-8c07-413e-8ff4-4b25f4ff112b" />
 ### 設定
 logcalの各種設定が行えます。テーマの変更や、データの管理、通知許可など。

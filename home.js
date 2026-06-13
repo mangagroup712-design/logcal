@@ -49,7 +49,18 @@ function navigateWithPageBlur(url) {
     if (document.body.classList.contains('page-leaving')) return;
     document.body.classList.add('page-leaving');
     setTimeout(function() {
-        window.location.href = url;
+        var currentPath = window.location.pathname;
+        var basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+        // Cloudflare Pages など .html-less 配信の判定
+        var isHtmlLess = currentPath.indexOf('.html') === -1 && location.protocol !== 'file:';
+        var targetUrl = isHtmlLess ? url.replace(/\.html$/, '') : url;
+        // index.html は ./ に統一して循環遷移を防ぐ
+        if (targetUrl === 'index.html' || targetUrl === 'index') {
+            targetUrl = basePath || './';
+        } else {
+            targetUrl = basePath + targetUrl;
+        }
+        window.location.href = targetUrl;
     }, 220);
 }
 

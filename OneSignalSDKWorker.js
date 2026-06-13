@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', function(event) {
 /* ============================================================
    Logcal offline cache (from sw.js)
    ============================================================ */
-const CACHE_NAME = 'logcal-v1';
+const CACHE_NAME = 'logcal-v2';
 const ASSETS = [
     './',
     './index.html',

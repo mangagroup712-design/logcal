@@ -660,7 +660,12 @@ function encodeTaskForUrl(item) {
     };
     try {
         var json = JSON.stringify(payload);
-        return btoa(unescape(encodeURIComponent(json)));
+        var bytes = new TextEncoder().encode(json);
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
     } catch (e) {
         console.error('Encode failed', e);
         return null;
@@ -669,7 +674,12 @@ function encodeTaskForUrl(item) {
 
 function decodeTaskFromUrl(encoded) {
     try {
-        var json = decodeURIComponent(escape(atob(encoded)));
+        var binary = atob(encoded);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        var json = new TextDecoder().decode(bytes);
         return JSON.parse(json);
     } catch (e) {
         console.error('Decode failed', e);

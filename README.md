@@ -1,12 +1,13 @@
-#LOGCAL
+# LOGCAL
 タスク管理とカレンダーを融合させた、使いやすくて高機能なウェブアプリです。
 
 # つかいかた
 画面下部の3つのタブ「ホーム」「カレンダー」「設定」を切り替えることで個別の操作ができます。
 タスクを追加するには画面右下の＋をクリックまたはタップしていただくと可能です。
-## ホーム
+### ホーム
 追加されたタスクが一覧で表示され、管理できます。期限が近いものは上に表示され、オレンジ色でハイライトされます。特に近いものあるいは過ぎてしまったものは赤色でハイライトされます。その下には今まで追加してきたタスクがカテゴリーごとに分類されて表示されます。
-タスクの内容が表示されているコンテナをクリックまたはタップすると詳細がご覧いただけます。
-### スクリーンショット
-<img width="403" height="909" alt="Image" src="https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567" />
-<img width="406" height="906" alt="Image" src="https://github.com/user-attachments/assets/bc741380-63dc-4a6c-887c-a55a4fbaee7a" />
+タスクの内容が表示されているコンテナをクリックまたはタップすると詳細がご覧いただけます。また、そこでタスクの編集とURL経由での共有が行えます。
+スクリーンショット：
+<img width="403" height="909" alt="ホーム画面" src="https://github.com/user-attachments/assets/b99771c4-600e-4502-8945-4d1a513ed567" />
+<img width="406" height="906" alt="追加／編集" src="https://github.com/user-attachments/assets/bc741380-63dc-4a6c-887c-a55a4fbaee7a" />
+<img width="405" height="911" alt="カテゴリー管理" src="https://github.com/user-attachments/assets/42bb28cd-f3d7-459c-8848-d7c1e2099c34" />

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#a25bf4">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" id="favicon" href="">
@@ -81,6 +84,11 @@
                 <div class="settings-info"><span class="settings-label">完了・削除の確認</span><span class="settings-desc">タスクを完了または削除するときに確認画面を表示します</span></div>
                 <label class="toggle-label"><input type="checkbox" id="confirm-toggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
             </div>
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+                <div class="settings-info"><span class="settings-label">応援メッセージ</span><span class="settings-desc">未完了の期限当日・期限切れタスクがあるときに完了を促します</span></div>
+                <label class="toggle-label"><input type="checkbox" id="encouragement-toggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
         </section>
 
         <section class="settings-card">
@@ -134,7 +142,7 @@
             </div>
             <h3 class="app-name">Logcal</h3>
             <p class="app-version">v0.3</p>
-            <p class="app-desc">シンプルなのに高機能なタスク管理アプリ</p>
+            <p class="app-desc">app description</p>
         </section>
     </main>
 
@@ -229,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderNotificationSettings();
         updateBadgeUI();
         document.getElementById('confirm-toggle').checked = getConfirmEnabled();
+        document.getElementById('encouragement-toggle').checked = getEncouragementEnabled();
     }
 
     function renderNotificationSettings() {
@@ -270,6 +279,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('confirm-toggle').addEventListener('change', function() {
         setConfirmEnabled(this.checked);
         showToast(this.checked ? '確認画面を有効にしました' : '確認画面を無効にしました');
+    });
+
+    document.getElementById('encouragement-toggle').addEventListener('change', function() {
+        setEncouragementEnabled(this.checked);
+        showToast(this.checked ? '応援メッセージを有効にしました' : '応援メッセージを無効にしました');
+        if (this.checked) maybeShowEncouragementMessage();
     });
 
     document.getElementById('clear-data-btn').addEventListener('click', function() {

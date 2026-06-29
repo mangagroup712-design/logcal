@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#5B5EF4">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" id="favicon" href="">
@@ -22,17 +25,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru&family=Varela+Round&display=swap" rel="stylesheet">
+    <!-- OneSignal SDK v16 推奨設定 -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
             appId: "f1fddbbe-ea99-48be-989c-effed57c9f03",
             allowLocalhostAsSecureOrigin: true,
             notifyButton: { enable: false },
+            // Service Worker設定を最適化
             serviceWorkerParam: { scope: "/" },
-            serviceWorkerPath: "OneSignalSDKWorker.js"
+            serviceWorkerPath: "OneSignalSDKWorker.js",
+            // 通知許可を自動で求めない（ユーザー操作後に明示的に実行）
+            promptOptions: {
+                slidedown: {
+                    enabled: false
+                }
+            }
         });
+        
+        // デバッグ: 登録状態を確認
+        console.log("OneSignal initialized");
+        const subscription = await OneSignal.User.PushSubscription;
+        console.log("Push subscription:", subscription);
     });
     </script>
 </head>

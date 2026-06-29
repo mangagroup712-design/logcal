@@ -9,7 +9,8 @@ const PLANLY_KEYS = {
     firedNotifications: 'planly_fired_notifications',
     fcmToken: 'planly_fcm_token',
     theme: 'logcal_theme',
-    confirmEnabled: 'planly_confirm_enabled'
+    confirmEnabled: 'planly_confirm_enabled',
+    encouragementEnabled: 'planly_encouragement_enabled'
 };
 
 const DEFAULT_CATEGORIES = ['仕事', 'プライベート', '急ぎ', 'その他'];
@@ -407,6 +408,16 @@ function setConfirmEnabled(enabled) {
     notifyOtherPages('confirmEnabled');
 }
 
+function getEncouragementEnabled() {
+    var saved = localStorage.getItem(PLANLY_KEYS.encouragementEnabled);
+    return saved === null ? true : saved === 'true';
+}
+
+function setEncouragementEnabled(enabled) {
+    localStorage.setItem(PLANLY_KEYS.encouragementEnabled, String(Boolean(enabled)));
+    notifyOtherPages('encouragementEnabled');
+}
+
 function saveNotificationOffsets(offsets) {
     const clean = [...new Set(offsets
         .map(value => Number(value))
@@ -478,6 +489,40 @@ function markNotificationFired(key) {
     saveFiredNotifications(fired);
 }
 
+function getPendingEncouragementTask() {
+    const today = todayString();
+    return getTasks()
+        .filter(task => !task.done && task.due && task.due <= today)
+        .sort((a, b) => ((a.due || '') + (a.time || '23:59')).localeCompare((b.due || '') + (b.time || '23:59')))[0] || null;
+}
+
+async function maybeShowEncouragementMessage() {
+    if (!getEncouragementEnabled()) return false;
+    const task = getPendingEncouragementTask();
+    if (!task) return false;
+
+    const today = todayString();
+    const key = 'encouragement:' + today + ':' + task.id;
+    const fired = getFiredNotifications();
+    if (fired[key]) return false;
+
+    const messages = [
+        '少しだけ進めれば大丈夫。「' + task.text + '」を片付けていきましょう。',
+        '「' + task.text + '」が待っています。今の一歩があとで効いてきます。',
+        '未完了の「' + task.text + '」があります。短時間でも着手してみましょう。'
+    ];
+    const body = messages[Math.floor(Math.random() * messages.length)];
+    fired[key] = Date.now();
+    saveFiredNotifications(fired);
+    await showLogcalNotification('Logcal 応援メッセージ', body, {
+        type: 'encouragement',
+        taskId: task.id,
+        due: task.due,
+        tag: 'logcal-encouragement-' + task.id + '-' + today
+    });
+    return true;
+}
+
 async function showLogcalNotification(title, body, data) {
     addAppNotification(body, new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }));
 
@@ -510,6 +555,7 @@ function startTaskReminderScheduler() {
 
     const tick = async function() {
         const now = new Date();
+        await maybeShowEncouragementMessage();
         const duePlans = getTaskNotificationPlans(now)
             .filter(plan => plan.notifyAt.getTime() <= now.getTime() + 1000);
 
